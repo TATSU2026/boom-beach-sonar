@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>海岛奇兵·声呐鱼雷命中率助手 F 版</title>
+<style>
+:root{color-scheme:light;--ink:#143b35;--muted:#476762;--line:#c9dbd4;--accent:#126351;--paper:#fff;--base:#eff5f0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--base);color:var(--ink);font:15px/1.5 "PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid #b9d0c7;border-radius:8px;background:#fff;padding:7px 11px;font-weight:650}
+button:hover:enabled{background:#e8f3ec}button:disabled{opacity:.46;cursor:default}button:focus-visible,input:focus-visible{outline:3px solid #167e78;outline-offset:2px}
+.mast{background:#103e36;color:#f2fff7}.mast-inner,main{max-width:1160px;margin:auto;padding:20px clamp(12px,3vw,32px)}
+.mast-inner{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h1,h2,p{margin:0}h1{font-size:clamp(22px,4.5vw,32px);line-height:1.2}h2{font-size:17px}.edition{display:block;color:#a8d9c5;font-size:13px;margin-bottom:4px}
+.mast button{background:#194e43;color:#fff;border-color:#67978a}.mast button:hover:enabled{background:#276355}
+.mast .history-button{display:grid;place-items:center;width:40px;min-height:37px;padding:0;font:700 24px/1 "Segoe UI Symbol",system-ui,sans-serif}
+.usage{flex-basis:100%;max-width:880px;color:#d0e6e1;font-size:13px}
+.usage p+p{margin-top:5px}
+.actions,.modes,.legend{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+main{display:grid;grid-template-columns:284px minmax(0,1fr);gap:16px;align-items:start}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:15px;padding:clamp(12px,2vw,20px)}
+.settings h2{margin-bottom:9px}.setting{display:flex;justify-content:space-between;align-items:center;gap:6px;margin:7px 0}
+.step{display:grid;grid-template-columns:34px 47px 34px;gap:4px}
+.step button{padding:0;min-height:36px;font-size:20px;line-height:1}
+.step input{appearance:textfield;width:100%;min-width:0;border:1px solid #a6c3b7;border-radius:7px;background:#fff;text-align:center;color:#143b35;-webkit-text-fill-color:#143b35;font-weight:750;font-size:16px;padding:0 2px;font-variant-numeric:tabular-nums}
+.step input::-webkit-inner-spin-button,.step input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.author{color:#add0cd;font-size:13px;margin-top:4px}
+.fleet-icon{display:flex;justify-content:flex-start;align-items:center;width:86px;height:34px;padding:0 8px;border-radius:6px;background:#0a334a;color:#fff2cd}
+.fleet-icon.depleted{color:#728997}
+.fleet-silhouette{position:relative;display:flex;justify-content:center;align-items:center;gap:clamp(1px,calc(6px - var(--length)*.5px),4px);height:13px;
+  width:min(100%,calc(29px + var(--length)*6px));padding-inline:6px;border-radius:48% 27% 27% 48% / 50%;background:currentColor}
+.fleet-silhouette::before,.fleet-silhouette::after{content:"";position:absolute;background:currentColor}
+.fleet-silhouette::before{width:24%;height:6px;left:51%;bottom:calc(100% + 1px);border-radius:5px}
+.fleet-silhouette::after{width:6px;height:17px;left:-3px;top:-2px;border-radius:2px}
+.fleet-port{flex:0 1 5px;min-width:1px;aspect-ratio:1;border-radius:50%;background:#0a334a}
+.dim,.note{color:var(--muted);font-size:13px}.settings hr{border:0;border-top:1px solid var(--line);margin:13px 0}
+.sunk-line{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:7px}.sunk-line button{padding:4px 8px}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.modes button[aria-pressed=true]{background:var(--accent);color:white;border-color:var(--accent)}
+.note{margin:8px 0;min-height:20px}.error{color:#9f2c2c}
+.board-scroll{overflow:auto;padding:3px;margin:0 -3px}
+.board{display:grid;grid-template-columns:23px repeat(var(--cols),minmax(32px,1fr));gap:3px;width:100%;align-items:center}
+.axis{text-align:center;font-size:12px;font-weight:700;color:var(--muted)}
+.cell{padding:0;aspect-ratio:1;border-radius:6px;border:1px solid #a8c8b4;background:var(--tile,#e7f1d9);font-size:clamp(9px,1.75vw,14px);font-weight:750;line-height:1;display:grid;place-items:center;min-width:0;font-variant-numeric:tabular-nums}
+.board-scroll:not(.sea) .cell:hover:enabled{background:var(--tile,#e7f1d9);filter:brightness(.94)}
+.cell.water,.key.water{background:#e2edf3;color:#315a6b;border-color:#beccd4}
+.cell.ring,.key.ring{background:#edf1f2;color:#526d75;border-color:#d5e1e1}
+.cell.hit,.key.hit{background:#f6d6cb;color:#872f22;border-color:#e2a394}
+.cell.sunk,.key.sunk{background:#28594e;color:#fff;border-color:#28594e}
+.cell.best{box-shadow:inset 0 0 0 2px #be8006;border-color:#9c6707}
+.cell.preview{outline:3px solid #0a7b82;outline-offset:-3px}
+.cell.anchor{outline-style:double}
+.preview-actions[hidden]{display:none}
+.preview-actions{margin:8px 0}
+#confirm-sunk{background:var(--accent);color:#fff;border-color:var(--accent)}
+.legend{margin-top:9px;font-size:12px;color:var(--muted);gap:8px 12px}.legend span{display:inline-flex;align-items:center;gap:4px}
+.key{width:15px;height:15px;border:1px solid #a8c8b4;border-radius:4px;background:#e7f1d9;display:inline-block}.key.best{border:2px solid #be8006}
+.result{border:1px solid #cadfd4;background:#f1f8f1;border-radius:10px;padding:12px;margin-top:12px}.result strong{font-size:17px}.result p+p{margin-top:3px}
+details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer;font-weight:650}details p{margin-top:5px}
+@media(max-width:760px){main{grid-template-columns:minmax(0,1fr)}.play{grid-row:1}.cell{font-size:clamp(9px,2.7vw,15px)}.mast-inner{padding-block:13px}.actions button{padding:5px 8px}}
+.view-toggle{display:inline-flex;gap:3px;padding:3px;border-radius:10px;background:#e8f0f1}
+.view-toggle button{padding:4px 9px;border-color:transparent;background:transparent}
+.view-toggle button[aria-pressed=true]{background:#0b596a;color:white}
+.board-scroll.sea{border-radius:12px;background:#073957;padding:0;margin:0}
+.sea .scene{position:relative;isolation:isolate;overflow:hidden;aspect-ratio:1.51;min-width:calc(var(--cols,9) * 38px);
+  background:radial-gradient(ellipse at 81% 3%,#68d6c1 0%,#249ca5 24%,transparent 60%),radial-gradient(ellipse at 40% 53%,#176c87 0%,#10516d 46%,#073452 85%)}
+.sea .scene::before,.sea .scene::after{content:"";position:absolute;inset:0;pointer-events:none}
+.sea .scene::before{opacity:.48;background:
+  repeating-radial-gradient(ellipse at 52% 82%,transparent 0 13px,#68cad026 14px,#0b46672e 17px,transparent 20px 27px),
+  repeating-radial-gradient(ellipse at 91% 122%,transparent 0 17px,#e0fff01c 19px,transparent 23px 34px);
+  transform:scale(1.18) rotate(-12deg)}
+.sea .scene::after{background:radial-gradient(ellipse at 47% 42%,transparent 49%,#01243c60 100%);z-index:-1}
+.sea .board{position:absolute;left:50%;top:-1.6%;width:65%;aspect-ratio:1;gap:2px;align-items:stretch;
+  grid-template-columns:repeat(calc(var(--cols) + 1),minmax(0,1fr));grid-template-rows:repeat(calc(var(--cols) + 1),minmax(0,1fr));
+  transform:translateX(-50%) matrix(.7071,.495,-.7071,.495,0,0)}
+.sea .axis,.sea .cell-label{transform:matrix(.7071,-.7071,1.0101,1.0101,0,0)}
+.sea .axis{align-self:center;justify-self:center;color:#edfcff;text-shadow:0 1px 2px #022336;font-size:12px}
+.sea .cell{position:relative;display:grid;align-items:center;justify-items:center;aspect-ratio:auto;border-radius:2px;
+  color:white;border:1px solid #b6e8efb8;box-shadow:inset 0 0 0 1px #ddffff44;
+  background:linear-gradient(145deg,#ddfbff38,#397f9d5c);text-shadow:0 1px 2px #031b2b}
+.sea .cell.unknown{background:linear-gradient(145deg,#fff2,transparent),var(--sea-tile,#5daabc69)}
+.sea .cell.water,.sea .cell.ring,.sea .cell.sunk{background:#062f4d55;border-color:#5eafbf44;box-shadow:none}
+.sea .cell.water .cell-label{opacity:.65}
+.sea .cell.ring .cell-label,.sea .cell.sunk .cell-label,.sea .cell.hit .cell-label{opacity:0}
+.sea .cell.hit{background:#062b4870;border-color:#81cbd88c;box-shadow:none}
+.sea .cell.best{border:2px solid #ffda66;box-shadow:0 0 10px #ffe578b0,inset 0 0 6px #fff29f58;z-index:1}
+.sea .cell.preview{outline-color:#f2ff9d;z-index:3}
+.sea .cell:focus-visible{outline:3px solid white;z-index:4}
+.sea .cell:hover:enabled{filter:brightness(1.17)}
+.sea .cell-label{display:block;pointer-events:none;white-space:nowrap;font-size:clamp(8px,1.25vw,12px)}
+.debris{display:none}
+.sea .debris{display:block;position:absolute;z-index:1;width:77%;height:72%;pointer-events:none;transform:matrix(.7071,-.7071,1.0101,1.0101,0,0);
+  border-radius:50%;background:radial-gradient(ellipse at 50% 58%,#ebf8f8c9, #82bdc78c 52%,transparent 74%);filter:drop-shadow(0 1px 1px #03354b)}
+.sea .debris i{position:absolute;left:var(--x);top:var(--y);width:var(--w);height:var(--h);
+  transform:rotate(var(--turn));clip-path:polygon(0 27%,24% 8%,64% 0,96% 19%,100% 73%,66% 100%,17% 87%);
+  background:linear-gradient(131deg,#f6fcfb 5%,#8a9da5 15%,#c5d1d4 45%,#84959c 47%,#466873 70%,#e0ebec 86%)}
+.sea .debris i:nth-child(1){--x:15%;--y:16%;--w:45%;--h:47%;--turn:-28deg}
+.sea .debris i:nth-child(2){--x:48%;--y:4%;--w:38%;--h:61%;--turn:28deg}
+.sea .debris i:nth-child(3){--x:10%;--y:48%;--w:48%;--h:40%;--turn:15deg}
+.sea .debris i:nth-child(4){--x:49%;--y:56%;--w:37%;--h:36%;--turn:-17deg}
+.sea .debris i:nth-child(5){--x:34%;--y:37%;--w:35%;--h:36%;--turn:58deg}
+.wreck{display:none}
+.sea .wreck{position:absolute;inset:0;display:block;container-type:size;z-index:2;pointer-events:none}
+.sea .ship{position:absolute;top:50%;left:50%;width:86cqw;height:83cqh;
+  transform:translate(-50%,-55%) matrix(.7071,-.7071,1.0101,1.0101,0,0) rotate(35deg)}
+.sea .wreck.vertical .ship{width:86cqh;height:83cqw;transform:translate(-50%,-55%) matrix(.7071,-.7071,1.0101,1.0101,0,0) rotate(145deg)}
+.sea .ship::before{content:"";position:absolute;inset:12% -5% -11%;border-radius:100px;
+  background:repeating-radial-gradient(ellipse at 40% 52%,#edffffc4 0 1px,transparent 3px 5px),radial-gradient(ellipse,#e3faffaa 50%,transparent 75%);filter:blur(1px);opacity:.8}
+.sea .hull{position:absolute;inset:0;border-radius:100px;border:1px solid #435761;
+  background:radial-gradient(ellipse at 13% 32%,#d3e0e48c,transparent 26%),radial-gradient(ellipse at 90% 75%,#35475498,transparent 27%),
+    repeating-linear-gradient(90deg,transparent 0 18%,#45596493 19%,#e8f3f5b6 20%,transparent 22% 30%),
+    linear-gradient(180deg,#81949d 0%,#d4e1e3 14%,#eef3f3 32%,#adbfc5 54%,#748892 78%,#364d5c 98%);
+  box-shadow:inset -3px -2px 6px #162c3c9e,0 2px 5px #032e49ad}
+.sea .hull::before{content:"";position:absolute;top:21%;left:40%;width:24%;height:59%;border-radius:43%;
+  background:linear-gradient(145deg,#f4f9f8,#bdcbcf 43%,#68828c 65%,#344951);box-shadow:1px 2px 3px #293842,inset 0 1px 2px #edfaff}
+.sea .hull::after{content:"";position:absolute;top:26%;left:46%;width:16%;height:30%;border-radius:40%;
+  background:radial-gradient(ellipse at 86% 52%,#ffdbc8 0 14%,#982220 19% 26%,transparent 29%),linear-gradient(180deg,#ffbaa1,#ef5932 46%,#8d251f);
+  box-shadow:1px 2px 2px #4c3d32}
+.sea .tail{position:absolute;left:-6%;top:32%;width:12%;height:34%;transform:rotate(-25deg);border-radius:48%;background:linear-gradient(#a0b1b8,#425967 52%,#263947)}
+.sea+.legend .key{background:#649eac}.sea+.legend .key.water,.sea+.legend .key.ring{background:#1f5872}.sea+.legend .key.hit{background:#bbc7cb}.sea+.legend .key.sunk{background:#697f89}.sea+.legend .key.best{border-color:#cb930f}
+@media(max-width:450px){.sea .axis{font-size:10px}}
+</style>
+</head>
+<body>
+<header class="mast"><div class="mast-inner">
+  <div><span class="edition">F 版</span><h1>海岛奇兵·声呐鱼雷命中率助手</h1><p class="author">作者V：RyuYushin</p></div>
+  <div class="actions"><button class="history-button" id="undo" type="button" aria-label="撤销" title="撤销（Ctrl+Z）" aria-keyshortcuts="Control+Z">↶</button><button class="history-button" id="redo" type="button" aria-label="恢复刚才撤销的操作" title="恢复刚才撤销的操作（Ctrl+Y）" aria-keyshortcuts="Control+Y">↷</button><button id="export" type="button">导出</button><button id="import" type="button">导入</button><input id="file" type="file" accept=".json,application/json" hidden></div>
+  <div class="usage">
+    <p>国服、国际服通用。本工具是单机网页，下载后用浏览器打开即可离线使用，无需联网。它只用本机算力，根据你手动标记的棋盘估算下一发命中率。无需安装游戏插件，也无法自动点击或操作游戏，无需担心被封号。</p>
+    <p>棋盘支持「斜视」和「平视」两种模式。点击棋盘右上角即可切换。斜视更接近游戏视角，平视方便核对坐标。</p>
+  </div>
+</div></header>
+<main>
+  <aside class="card settings">
+    <h2>海域与舰队</h2>
+    <div id="dimensions"></div>
+    <hr>
+    <h2>每艘潜艇的长度</h2>
+    <p class="dim">填入开局舰队。标记击沉后会自动扣除对应长度。</p>
+    <div id="lengths"></div>
+    <hr>
+    <h2>已击沉</h2>
+    <div id="sunk-list"></div>
+    <p class="note" id="save" role="status"></p>
+  </aside>
+  <section class="card play" aria-labelledby="board-title">
+    <div class="topline"><h2 id="board-title">探索棋盘</h2><div class="actions">
+      <div class="view-toggle" aria-label="棋盘视角"><button id="view-sea" type="button" aria-pressed="true">斜视</button><button id="view-flat" type="button" aria-pressed="false">平视</button></div>
+      <button id="reset" type="button">清空标记</button>
+    </div></div>
+    <div class="modes" id="modes" aria-label="标记模式">
+      <button type="button" data-mode="water" aria-pressed="true">空水</button>
+      <button type="button" data-mode="hit" aria-pressed="false">命中未沉</button>
+      <button type="button" data-mode="sunk" aria-pressed="false">击沉</button>
+      <button type="button" data-mode="unknown" aria-pressed="false">擦除</button>
+    </div>
+    <p class="note" id="message" role="status"></p>
+    <div class="actions preview-actions" id="preview-actions" hidden>
+      <button type="button" id="confirm-sunk">确认击沉</button>
+      <button type="button" id="cancel-sunk">取消选取</button>
+    </div>
+    <div class="board-scroll sea" id="board-scroll" tabindex="0" aria-label="探索棋盘，可横向滚动"><div class="scene" id="scene"><div class="board" id="board"></div></div></div>
+    <div class="legend" aria-label="棋盘图例"><span><i class="key"></i>未知</span><span><i class="key water"></i>空水</span><span><i class="key ring"></i>排除空水</span><span><i class="key hit"></i>命中</span><span><i class="key sunk"></i>已击沉</span><span><i class="key best"></i>最高概率</span></div>
+    <div class="result" aria-live="polite"><p><strong id="recommend"></strong></p><p id="status" class="dim"></p></div>
+    <details><summary>概率怎么算</summary>
+      <p>潜艇的摆法很多，手算很难逐一检查。工具会根据你标记的空水、命中和已击沉位置，筛出符合条件的摆法，统计各个未知格有潜艇的比例。</p>
+      <p>在符合当前设置和标记的完整布局中，假设每种布局等可能。精确结果统计了全部合法布局，同长度的潜艇互换位置只算一种布局。</p>
+      <p>每艘未击沉潜艇至少还有一格未被命中。游戏显示击沉时，请用「击沉」标记整艘潜艇。</p>
+      <p>像 10×10 这样的大海域，可能的摆法往往更多。搜索达到上限后，工具会用加权随机抽样，并标明「近似」。样本少时，概率和推荐都可能波动。近似的 0% 表示样本中未观测到命中。</p>
+      <p>剩下的潜艇较短、已知线索较少时，通常更难锁定位置。推荐格可作为下一发的参考。</p>
+    </details>
+  </section>
+</main>
+<script>
+"use strict";
+
+function solve(state, limits = { nodes: 85000, exactMs: 400, sampleMs: 900, attempts: 22000 }) {
+  const {rows, cols, marks, sunk} = state;
+  const size = rows * cols;
+  const bits = Array.from({length:size}, (_, index) => 1n << BigInt(index));
+  const remaining = state.lengths.slice();
+  const sunkCells = new Set(sunk.flatMap(boat => boat.cells));
+  let blocked = 0n, hits = 0n;
+  for (const boat of sunk) {
+    remaining.splice(remaining.indexOf(boat.cells.length), 1);
+    for (const index of boat.cells) {
+      for (const neighbor of neighbors(index, rows, cols)) blocked |= bits[neighbor];
+    }
+  }
+  for (const [index, mark] of Object.entries(marks)) {
+    if (mark === "water") blocked |= bits[index];
+    if (mark === "hit" && !sunkCells.has(Number(index))) hits |= bits[index];
+  }
+  const zero = () => Array(size).fill(0);
+  if (hits & blocked) return {kind:"exact", count:0, p:zero()};
+  remaining.sort((a,b) => b-a);
+  const lists = new Map();
+  for (const length of new Set(remaining)) {
+    const options = [];
+    for (let r=0; r<rows; r++) for (let c=0; c<cols; c++) {
+      for (const [dr, dc] of length === 1 ? [[0,1]] : [[0,1],[1,0]]) {
+        if (r+(length-1)*dr >= rows || c+(length-1)*dc >= cols) continue;
+        const cells = Array.from({length}, (_, i) => (r+i*dr)*cols+c+i*dc);
+        const mask = cells.reduce((value, index) => value | bits[index], 0n);
+        if ((mask & blocked) || (mask & hits) === mask) continue;
+        let halo = mask;
+        for (const index of cells) {
+          for (const neighbor of neighbors(index, rows, cols)) halo |= bits[neighbor];
+        }
+        if ((halo & ~mask) & hits) continue;
+        options.push({cells, mask, halo});
+      }
+    }
+    lists.set(length, options);
+  }
+  const placementLists = remaining.map(length => lists.get(length));
+  const cover = Array(remaining.length+1).fill(0n);
+  for (let depth=remaining.length-1; depth>=0; depth--) {
+    cover[depth] = placementLists[depth].reduce((mask, option) => mask | option.mask, cover[depth+1]);
+  }
+  const path = [];
+  let totals = zero(), sum = 0, squareSum = 0, count = 0;
+  function tally(weight) {
+    count++;
+    sum += weight;
+    squareSum += weight * weight;
+    for (const option of path) for (const index of option.cells) totals[index] += weight;
+  }
+  function result(kind, attempts) {
+    return {kind, count, attempts, effective:sum ? Math.round(sum * sum / squareSum) : 0,
+      p:totals.map(value => sum ? value / sum : 0)};
+  }
+  const exactUntil = performance.now() + limits.exactMs;
+  let nodes = 0, interrupted = false;
+  function visit(depth, start, occupied, uncovered) {
+    if (++nodes > limits.nodes || ((nodes & 127) === 0 && performance.now() >= exactUntil)) {
+      interrupted = true;
+      return;
+    }
+    if (uncovered & ~cover[depth]) return;
+    if (depth === placementLists.length) {
+      tally(1);
+      return;
+    }
+    const options = placementLists[depth];
+    for (let i=start; i<options.length && !interrupted; i++) {
+      const option = options[i];
+      if (option.mask & occupied) continue;
+      path.push(option);
+      const next = placementLists[depth+1] === options ? i+1 : 0;
+      visit(depth+1, next, occupied | option.halo, uncovered & ~option.mask);
+      path.pop();
+    }
+  }
+  visit(0, 0, 0n, hits);
+  if (!interrupted) return result("exact");
+
+  const exactWitness = count > 0;
+  totals = zero();
+  sum = squareSum = count = 0;
+  const sampleUntil = performance.now() + limits.sampleMs;
+  let attempts = 0;
+  while (attempts < limits.attempts && performance.now() < sampleUntil) {
+    attempts++;
+    let occupied = 0n, uncovered = hits, start = 0, weight = 1;
+    path.length = 0;
+    for (let depth=0; depth<placementLists.length; depth++) {
+      const options = placementLists[depth];
+      let choices = 0, selected = -1;
+      for (let i=start; i<options.length; i++) {
+        const option = options[i];
+        if ((option.mask & occupied) || ((uncovered & ~option.mask) & ~cover[depth+1])) continue;
+        if (Math.random() * ++choices < 1) selected = i;
+      }
+      if (selected < 0) break;
+      const option = options[selected];
+      weight *= choices;
+      path.push(option);
+      occupied |= option.halo;
+      uncovered &= ~option.mask;
+      start = placementLists[depth+1] === options ? selected+1 : 0;
+    }
+    if (path.length === placementLists.length && !uncovered) tally(weight);
+  }
+  return {...result("approx", attempts), exactWitness};
+}
+
+function neighbors(index, rows, cols) {
+  const row = Math.floor(index/cols), col = index%cols, result = [];
+  for (let r=Math.max(0,row-1); r<=Math.min(rows-1,row+1); r++) {
+    for (let c=Math.max(0,col-1); c<=Math.min(cols-1,col+1); c++) result.push(r*cols+c);
+  }
+  return result;
+}
+
+function segment(a, b, cols) {
+  const ar = Math.floor(a/cols), br = Math.floor(b/cols);
+  const ac = a%cols, bc = b%cols;
+  if (ar !== br && ac !== bc) return [];
+  const stride = ar === br ? 1 : cols;
+  return Array.from({length:Math.abs(b-a)/stride+1}, (_, i) => Math.min(a,b)+i*stride);
+}
+
+const MAX_SIDE = 14, MAX_BOATS = 12;
+const KEY = "boom-beach-sonar-b-v1";
+const copy = value => JSON.parse(JSON.stringify(value));
+const integer = (value,min,max) => Number.isInteger(value) && value>=min && value<=max;
+const defaults = {rows:9, cols:9, spacing:true, lengths:[5,4,3,2], marks:{}, sunk:[]};
+const $ = id => document.getElementById(id);
+
+function geometry({sunk, rows, cols}) {
+  const hulls = new Set(sunk.flatMap(boat => boat.cells));
+  const ring = new Set();
+  for (const index of hulls) for (const near of neighbors(index, rows, cols)) if (!hulls.has(near)) ring.add(near);
+  return {hulls, ring};
+}
+
+function validate(data) {
+  const bad = message => { throw new Error(message); };
+  if (!data || !integer(data.rows,2,MAX_SIDE) || !integer(data.cols,2,MAX_SIDE) ||
+      !Array.isArray(data.lengths) || data.lengths.length > MAX_BOATS ||
+      !data.lengths.every(length => integer(length,1,Math.max(data.rows,data.cols))) ||
+      !data.marks || typeof data.marks !== "object" || Array.isArray(data.marks) ||
+      !Array.isArray(data.sunk) || data.sunk.length > data.lengths.length) bad("海域或舰队设置无效。");
+  const {rows, cols} = data;
+  const marks = {}, sunk = [], remaining = data.lengths.slice(), blocked = new Set();
+  for (const [key,value] of Object.entries(data.marks)) {
+    if (String(Number(key)) !== key || !integer(Number(key),0,rows*cols-1) ||
+        (value !== "water" && value !== "hit")) bad("棋盘标记无效。");
+    marks[key] = value;
+  }
+  for (const boat of data.sunk) {
+    const cells = boat?.cells;
+    if (!Array.isArray(cells) || !cells.length || cells.length > MAX_SIDE ||
+        !cells.every(index => integer(index,0,rows*cols-1))) bad("击沉记录无效。");
+    const ordered = segment(cells[0],cells[cells.length-1],cols);
+    const match = remaining.indexOf(cells.length);
+    if (match < 0 || ordered.length !== cells.length ||
+        !cells.every((index,i) => index === ordered[i] && !blocked.has(index) && marks[index] !== "water")) {
+      bad("击沉记录与舰队、空水或其他已击沉潜艇冲突。");
+    }
+    remaining.splice(match,1);
+    for (const index of cells) for (const near of neighbors(index,rows,cols)) blocked.add(near);
+    sunk.push({cells:ordered});
+  }
+  const {ring} = geometry({sunk, rows, cols});
+  if ([...ring].some(index => marks[index] === "hit")) bad("击沉潜艇周围一圈还有命中标记，请先核对。");
+  const validated = {rows,cols,spacing:true,lengths:data.lengths.slice(),marks,sunk};
+  if (rows !== cols) resize(validated,Math.max(rows,cols));
+  return validated;
+}
+
+let state = copy(defaults), saveWarning = "";
+try {
+  const saved = localStorage.getItem(KEY);
+  if (saved) state = validate(JSON.parse(saved).state);
+} catch {
+  saveWarning = "无法读取上次的自动保存。可使用导入恢复。";
+}
+let previous = [], future = [], mode = "water", draft = null, answer = null;
+let worker = null, timer, revision = 0;
+let view = "sea";
+let surfacing = null;
+try {
+  if (localStorage.getItem(KEY+"-view") === "flat") view = "flat";
+} catch {}
+
+function setView(nextView) {
+  view = nextView;
+  $("board-scroll").classList.toggle("sea",view==="sea");
+  $("view-sea").setAttribute("aria-pressed",String(view==="sea"));
+  $("view-flat").setAttribute("aria-pressed",String(view==="flat"));
+}
+
+$("view-sea").onclick = () => changeView("sea");
+$("view-flat").onclick = () => changeView("flat");
+function changeView(nextView) {
+  setView(nextView);
+  try {localStorage.setItem(KEY+"-view",view);}
+  catch {}
+}
+
+function save() {
+  try {
+    localStorage.setItem(KEY,JSON.stringify({version:1,state}));
+    saveWarning = "";
+  } catch {
+    saveWarning = "浏览器未能自动保存，请用导出备份。";
+  }
+  $("save").textContent = saveWarning || "已自动保存到此浏览器";
+}
+
+function showMessage(message, error = false) {
+  $("preview-actions").hidden = !draft;
+  $("confirm-sunk").disabled = !draft || draft.end === null || !!draft.error;
+  const instruction = mode === "hit" ? "标记命中但未击沉的格子。若游戏已显示击沉，请用「击沉」标记整艘潜艇。"
+    : mode !== "sunk" ? "选择标记类型后点击格子。再次点击同种标记可取消。"
+    : !draft ? "点击潜艇一端，再点另一端预览。单格潜艇请点同一格两次。"
+    : draft.end === null ? `已选起点 ${coord(draft.start)}。请点另一端。`
+    : `预览 ${coord(draft.start)}–${coord(draft.end)}（${segment(draft.start,draft.end,state.cols).length} 格）。可继续调整终点，选好后点「确认击沉」。`;
+  $("message").textContent = message || draft?.error || instruction;
+  $("message").classList.toggle("error",error || !!draft?.error);
+}
+
+function commit(next) {
+  try {
+    next = validate(next);
+  } catch (error) {
+    showMessage(error.message,true);
+    return false;
+  }
+  if (JSON.stringify(next) === JSON.stringify(state)) return false;
+  previous.push(state);
+  if (previous.length > 120) previous.shift();
+  future = [];
+  state = next;
+  refresh();
+  return true;
+}
+
+function refresh() {
+  draft = null;
+  answer = null;
+  save();
+  renderSettings();
+  showMessage();
+  renderBoard();
+  schedule();
+}
+
+function resize(next, side) {
+  const translate = index => {
+    const row = Math.floor(index/next.cols), col = index%next.cols;
+    return row < side && col < side ? row*side+col : -1;
+  };
+  if (next.sunk.some(boat => boat.cells.some(index => translate(index)<0))) {
+    throw new Error("新尺寸会截断已击沉潜艇，请先移除对应击沉记录。");
+  }
+  next.marks = Object.fromEntries(Object.entries(next.marks).map(([key,value]) => [translate(Number(key)),value]).filter(([index]) => index >= 0));
+  next.sunk.forEach(boat => { boat.cells = boat.cells.map(translate); });
+  next.rows = next.cols = side;
+}
+
+function stepper(label, value, min, max, update, icon) {
+  const row = document.createElement("div");
+  row.className = "setting";
+  const name = document.createElement("span");
+  if (icon) name.append(icon);
+  else name.textContent = label;
+  const group = document.createElement("span");
+  group.className = "step";
+  const input = document.createElement("input");
+  input.type = "number";
+  input.inputMode = "numeric";
+  input.min = min;
+  input.max = max;
+  input.value = value;
+  input.setAttribute("aria-label",label);
+  input.dataset.setting = label;
+  function apply(number) {
+    if (!integer(number,min,max)) {
+      input.value = value;
+      showMessage(`${label}请输入 ${min}–${max} 的整数。`,true);
+      return;
+    }
+    if (number !== value && !update(number)) input.value = value;
+  }
+  const controls = [-1,1].map(delta => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = delta < 0 ? "−" : "+";
+    const direction = delta < 0 ? "减少" : "增加";
+    button.setAttribute("aria-label",direction+label);
+    button.dataset.setting = direction+label;
+    button.disabled = !integer(value+delta,min,max);
+    button.onclick = () => apply(value+delta);
+    return button;
+  });
+  input.onchange = () => apply(input.valueAsNumber);
+  input.onkeydown = event => {
+    if (event.key === "Enter") input.blur();
+  };
+  group.append(controls[0],input,controls[1]);
+  row.append(name,group);
+  return row;
+}
+
+function edit(editState) {
+  const next = copy(state);
+  try {
+    editState(next);
+    return commit(next);
+  } catch (error) {
+    showMessage(error.message,true);
+    return false;
+  }
+}
+
+function renderSettings() {
+  const focused = document.activeElement?.dataset.setting;
+  $("dimensions").replaceChildren(
+    stepper("海域边长",state.cols,2,MAX_SIDE,value => edit(next => resize(next,value))),
+    stepper("潜艇数量",state.lengths.length,0,MAX_BOATS,value => edit(next => {
+      next.lengths = next.lengths.slice(0,value);
+      while (next.lengths.length < value) next.lengths.push(2);
+    }))
+  );
+  const sunkLengths = state.sunk.map(boat => boat.cells.length);
+  $("lengths").replaceChildren(...state.lengths.map((length,index) => {
+    const match = sunkLengths.indexOf(length);
+    if (match >= 0) sunkLengths.splice(match,1);
+    const icon = document.createElement("span");
+    icon.className = match >= 0 ? "fleet-icon depleted" : "fleet-icon";
+    icon.setAttribute("role","img");
+    icon.setAttribute("aria-label",`第 ${index+1} 艘 · ${length} 格 · ${match >= 0 ? "已击沉" : "未击沉"}`);
+    icon.title = icon.getAttribute("aria-label");
+    const silhouette = document.createElement("span");
+    silhouette.className = "fleet-silhouette";
+    silhouette.style.setProperty("--length",length);
+    for (let port=0;port<length;port++) {
+      silhouette.append(Object.assign(document.createElement("span"),{className:"fleet-port"}));
+    }
+    icon.append(silhouette);
+    return stepper(`第 ${index+1} 艘`,length,1,state.cols,value => edit(next => {next.lengths[index]=value;}),icon);
+  }));
+  if (focused) {
+    const replacement = [...document.querySelectorAll("[data-setting]")].find(control => control.dataset.setting === focused);
+    if (replacement?.tagName === "BUTTON" && !replacement.disabled) replacement.focus({preventScroll:true});
+  }
+  $("undo").disabled = !previous.length;
+  $("redo").disabled = !future.length;
+  $("reset").disabled = !state.sunk.length && !Object.keys(state.marks).length;
+  const list = $("sunk-list");
+  list.replaceChildren();
+  if (!state.sunk.length) list.append(Object.assign(document.createElement("p"),{className:"dim",textContent:"暂无记录"}));
+  state.sunk.forEach(({cells},index) => {
+    const line = document.createElement("div");
+    line.className = "sunk-line";
+    const label = cells.length === 1 ? coord(cells[0]) : `${coord(cells[0])}–${coord(cells.at(-1))}`;
+    const adjust = document.createElement("button");
+    adjust.type = "button";
+    adjust.textContent = "修正";
+    adjust.setAttribute("aria-label",`修正 ${label} 的击沉记录`);
+    adjust.onclick = () => {
+      setMode("sunk");
+      updateDraft(cells[0],cells.at(-1),index);
+      $("board").querySelector(`[data-cell="${cells.at(-1)}"]`).focus();
+    };
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "移除";
+    remove.setAttribute("aria-label",`移除 ${label} 的击沉记录`);
+    remove.onclick = () => edit(next => {next.sunk.splice(index,1);});
+    const actions = document.createElement("span");
+    actions.className = "actions";
+    actions.append(adjust,remove);
+    line.append(`${label} · ${cells.length} 格`,actions);
+    list.append(line);
+  });
+}
+
+const letter = col => String.fromCharCode(65+col);
+const coord = index => letter(index%state.cols)+(Math.floor(index/state.cols)+1);
+function percent(p) {
+  if (p === 0 || p === 1) return Math.round(p*100)+"%";
+  if (p < .001) return "<0.1%";
+  if (p > .999) return ">99.9%";
+  return Number((p*100).toFixed(1))+"%";
+}
+
+function renderBoard() {
+  const {rows,cols,marks,sunk,lengths} = state;
+  const {hulls,ring} = geometry(state);
+  const board = $("board"), focusIndex = document.activeElement?.dataset.cell;
+  const preview = new Set(draft ? segment(draft.start,draft.end ?? draft.start,cols) : []);
+  const probabilities = answer?.count ? answer.p : null;
+  const unknown = Array.from({length:rows*cols},(_,i)=>i).filter(i => !marks[i] && !hulls.has(i) && !ring.has(i));
+  const best = probabilities ? Math.max(0,...unknown.map(i=>probabilities[i])) : 0;
+  const bestCells = new Set(best > 0 ? unknown.filter(i=>Math.abs(probabilities[i]-best)<1e-12) : []);
+  const fragments = document.createDocumentFragment();
+  function axis(label) {
+    fragments.append(Object.assign(document.createElement("span"),{className:"axis",textContent:label}));
+  }
+  axis("");
+  for (let c=0;c<cols;c++) axis(letter(c));
+  for (let r=0;r<rows;r++) {
+    axis(r+1);
+    for (let c=0;c<cols;c++) {
+      const i=r*cols+c;
+      const kind = hulls.has(i) ? "sunk" : marks[i] || (ring.has(i) ? "ring" : "unknown");
+      const cell = document.createElement("button");
+      cell.type = "button";
+      cell.dataset.cell = i;
+      const mark = {sunk:["沉","已击沉"],hit:["×","命中"],water:["·","空水"],ring:["·","排除空水"],unknown:["","未知"]}[kind];
+      const p = kind === "unknown" && probabilities ? probabilities[i] : null;
+      cell.className = `cell ${kind}${bestCells.has(i) ? " best" : ""}${preview.has(i) ? " preview" : ""}${i===draft?.start ? " anchor" : ""}`;
+      const label = document.createElement("span");
+      label.className = "cell-label";
+      label.textContent = p === null ? mark[0] : percent(p);
+      cell.append(label);
+      if (kind === "hit") {
+        const debris = document.createElement("span");
+        debris.className = "debris";
+        debris.setAttribute("aria-hidden","true");
+        for (let piece=0;piece<5;piece++) debris.append(document.createElement("i"));
+        cell.append(debris);
+      }
+      const description = `${coord(i)} ${mark[1]}${p === null ? "" : " "+percent(p)}${bestCells.has(i) ? "，最高概率" : ""}${preview.has(i) ? "，击沉预览" : ""}`;
+      cell.setAttribute("aria-label",description);
+      cell.title = description;
+      if (p !== null && best > 0) {
+        const strength = Math.sqrt(p/best);
+        cell.style.setProperty("--tile",`hsl(99 42% ${94-30*strength}%)`);
+        cell.style.setProperty("--sea-tile",`hsl(${193-28*strength} 59% ${34+6*strength}% / ${.26+.68*strength})`);
+      }
+      cell.onclick = () => markCell(i);
+      fragments.append(cell);
+    }
+  }
+  for (const {cells} of sunk) {
+    const first = cells[0], last = cells.at(-1);
+    const firstRow = Math.floor(first/cols), lastRow = Math.floor(last/cols);
+    const wreck = document.createElement("div");
+    wreck.className = firstRow===lastRow ? "wreck" : "wreck vertical";
+    wreck.dataset.wreck = first;
+    wreck.setAttribute("aria-hidden","true");
+    wreck.style.gridRow = `${firstRow+2} / ${lastRow+3}`;
+    wreck.style.gridColumn = `${first%cols+2} / ${last%cols+3}`;
+    const hull = Object.assign(document.createElement("span"),{className:"hull"});
+    hull.append(Object.assign(document.createElement("span"),{className:"tail"}));
+    const ship = Object.assign(document.createElement("span"),{className:"ship"});
+    ship.append(hull);
+    wreck.append(ship);
+    fragments.append(wreck);
+  }
+  $("scene").style.setProperty("--cols",cols);
+  board.replaceChildren(fragments);
+  if (surfacing) {
+    const elapsed = performance.now()-surfacing.time;
+    if (elapsed >= 460) surfacing = null;
+    else if (view === "sea") {
+      const animation = board.querySelector(`[data-wreck="${surfacing.first}"]`)?.animate?.([
+        {opacity:.25,translate:"0 24px",scale:".83",filter:"blur(3px)"},
+        {opacity:1,translate:"0 0",scale:"1",filter:"blur(0)"}
+      ],{duration:460,easing:"cubic-bezier(.18,.82,.3,1)"});
+      if (animation) animation.currentTime = elapsed;
+    }
+  }
+  if (focusIndex !== undefined) board.querySelector(`[data-cell="${focusIndex}"]`)?.focus({preventScroll:true});
+  const recommended = [...bestCells];
+  $("recommend").textContent = recommended.length
+    ? `${answer.kind === "approx" ? "估算推荐" : "推荐探索"} · ${recommended.slice(0,4).map(coord).join("、")}${recommended.length>4 ? ` 等 ${recommended.length} 格` : ""} · ${percent(best)}`
+    : answer ? (answer.count ? (lengths.length===sunk.length ? "所有潜艇已击沉" : "没有可推荐的未知格") : (answer.kind==="exact" ? "当前没有合法布局" : "暂未获得可用估算")) : "正在推算…";
+  $("status").textContent = !answer ? "" : answer.kind === "error" ? "计算未能完成，可修改一个标记后重试。"
+    : answer.kind === "exact" ? (answer.count ? `精确 · ${answer.count.toLocaleString()} 种合法布局` : "精确 · 请核对舰队设置、标记和间隔。")
+    : answer.count ? `近似 · ${answer.count.toLocaleString()} 份有效样本 / ${answer.attempts.toLocaleString()} 次尝试 · 加权有效样本约 ${answer.effective.toLocaleString()}${answer.effective<100 ? " · 样本较少" : ""}`
+    : `近似 · ${answer.attempts.toLocaleString()} 次抽样均未完成合法布局。${answer.exactWitness ? "枚举阶段曾找到合法布局。" : "尚无法判断是否存在合法布局。"}`;
+}
+
+function markCell(index) {
+  const otherSunk = state.sunk.filter((_,i) => i !== draft?.editing);
+  const {hulls,ring} = geometry({...state,sunk:otherSunk});
+  if (hulls.has(index) || ring.has(index)) {
+    showMessage(hulls.has(index) ? "请在「已击沉」列表移除整艘潜艇。" : "这格已由击沉规则排除。",true);
+    return;
+  }
+  if (mode !== "sunk") {
+    edit(next => {
+      if (mode === "unknown" || next.marks[index] === mode) delete next.marks[index];
+      else next.marks[index] = mode;
+    });
+    return;
+  }
+  if (state.marks[index] === "water") {
+    showMessage("击沉潜艇不能占用已标记的空水。",true);
+    return;
+  }
+  if (!draft) {
+    updateDraft(index,null,null);
+    return;
+  }
+  if (!segment(draft.start,index,state.cols).length) {
+    showMessage("两端必须在同一行或同一列。请重新选择终点。",true);
+    return;
+  }
+  updateDraft(draft.start,index,draft.editing);
+}
+
+function applyDraft(next) {
+  const boat = {cells:segment(draft.start,draft.end,state.cols)};
+  if (draft.editing === null) next.sunk.push(boat);
+  else next.sunk[draft.editing] = boat;
+}
+
+function updateDraft(start,end,editing) {
+  draft = {start,end,editing,error:""};
+  if (end !== null) {
+    const next = copy(state);
+    applyDraft(next);
+    try {validate(next);}
+    catch (error) {draft.error = error.message + " 可继续调整终点。";}
+  }
+  showMessage();
+  renderBoard();
+}
+
+function schedule() {
+  clearTimeout(timer);
+  worker?.terminate();
+  worker = null;
+  const id = ++revision;
+  const snapshot = state;
+  function finish(result) {
+    if (id !== revision) return;
+    worker?.terminate();
+    worker = null;
+    answer = result;
+    renderBoard();
+  }
+  function fallback() {
+    if (id !== revision) return;
+    try {finish(solve(snapshot,{nodes:22000,exactMs:70,sampleMs:130,attempts:3500}));}
+    catch {finish({kind:"error"});}
+  }
+  timer = setTimeout(() => {
+    try {
+      const source = `${neighbors.toString()}\n${solve.toString()}\nself.onmessage = event => self.postMessage(solve(event.data));`;
+      const url = URL.createObjectURL(new Blob([source],{type:"text/javascript"}));
+      try {worker = new Worker(url);}
+      finally {URL.revokeObjectURL(url);}
+      worker.onmessage = event => finish(event.data);
+      worker.onerror = event => {event.preventDefault(); fallback();};
+      worker.postMessage(snapshot);
+    } catch {fallback();}
+  },90);
+}
+
+function setMode(nextMode) {
+  mode = nextMode;
+  draft = null;
+  for (const control of $("modes").querySelectorAll("button")) control.setAttribute("aria-pressed",String(control.dataset.mode===mode));
+  showMessage();
+  renderBoard();
+}
+$("modes").onclick = event => {
+  const button = event.target.closest("[data-mode]");
+  if (button) setMode(button.dataset.mode);
+};
+$("confirm-sunk").onclick = () => {
+  if (!draft || draft.end === null || draft.error) return;
+  if (view === "sea" && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    surfacing = {first:Math.min(draft.start,draft.end),time:performance.now()};
+  }
+  if (!edit(applyDraft)) {
+    surfacing = null;
+    setMode(mode);
+  }
+};
+$("cancel-sunk").onclick = () => setMode(mode);
+$("reset").onclick = () => edit(next => {next.marks={};next.sunk=[];});
+function travel(from,to) {
+  if (!from.length) return;
+  to.push(state);
+  state = from.pop();
+  refresh();
+}
+$("undo").onclick = () => travel(previous,future);
+$("redo").onclick = () => travel(future,previous);
+document.addEventListener("keydown",event => {
+  if (event.key === "Escape" && draft) setMode(mode);
+  if (!(event.ctrlKey || event.metaKey) || event.altKey || /^(INPUT|TEXTAREA)$/.test(event.target.tagName)) return;
+  const key = event.key.toLowerCase();
+  if (key === "z" || key === "y") {
+    event.preventDefault();
+    if (key === "y" || event.shiftKey) travel(future,previous);
+    else travel(previous,future);
+  }
+});
+$("export").onclick = () => {
+  const file = new Blob([JSON.stringify({version:1,state},null,2)],{type:"application/json"});
+  const url = URL.createObjectURL(file);
+  const link = Object.assign(document.createElement("a"),{href:url,download:"声呐探索进度-F版.json"});
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url),2000);
+};
+$("import").onclick = () => $("file").click();
+$("file").onchange = async event => {
+  const input = event.target;
+  const [file] = input.files;
+  input.value = "";
+  if (!file) return;
+  try {
+    if (file.size > 100000) throw new Error("文件过大，请选择本工具导出的进度文件。");
+    let data;
+    try {data=JSON.parse(await file.text());}
+    catch {throw new Error("文件无法读取或不是有效的 JSON。");}
+    if (data?.version !== 1 || !data.state) throw new Error("请选择本工具导出的进度文件。");
+    const imported = validate(data.state);
+    showMessage(commit(imported) ? "已导入探索进度。可撤销此次导入。" : "该进度与当前棋盘相同。");
+  } catch (error) {showMessage(error.message,true);}
+};
+renderSettings();
+setView(view);
+showMessage();
+renderBoard();
+$("save").textContent = saveWarning || "修改后将在此浏览器自动保存";
+schedule();
+</script>
+</body>
+</html>
