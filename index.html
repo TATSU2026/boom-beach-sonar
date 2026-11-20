@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>海岛奇兵·声呐鱼雷命中率助手</title>
+<title>《海岛奇兵》声呐小助手</title>
 <style>
 :root{color-scheme:light;--ink:#143b35;--muted:#476762;--line:#c9dbd4;--accent:#126351;--paper:#fff;--base:#eff5f0}
 *{box-sizing:border-box}
@@ -176,7 +176,7 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
 .odds-control{margin-inline-start:auto;gap:5px;padding:5px 2px;font-size:13px;cursor:pointer;color:var(--muted)}
 .odds-control input{margin:0;width:16px;height:16px;accent-color:var(--accent)}
 
-/* F3.3: the ocean and controls stay fixed; only the board scales. */
+/* F4.2: the ocean and controls stay fixed; only the board scales. */
 .sea .scene{min-width:0;aspect-ratio:1.12;touch-action:none}
 .sea .board{top:48%;width:61%;transform:translate(-50%,-50%) perspective(185cqw) rotateX(44deg) rotateZ(45deg) scale(var(--board-zoom,1));transform-origin:center;touch-action:none}
 .sea-controls{position:absolute;inset:0;z-index:5;pointer-events:none}
@@ -243,21 +243,75 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
 .contact-card button:disabled{opacity:.48;cursor:default}
 @media(max-width:680px){.community-columns{grid-template-columns:minmax(0,1fr)}.community-form{border-top:1px solid #d8e4de;padding-top:14px}.contact-card .community-form{border:0;padding-top:0}}
 </style>
-</head>
-<body>
+<style>.other-tools{position:relative;margin:0;color:inherit;font:inherit}.other-tools summary{cursor:pointer;padding:7px 9px;border:1px solid #829d9b;border-radius:7px;font-size:13px}.other-tools[open]{z-index:10}.other-tools>a{position:absolute;right:0;top:100%;white-space:nowrap;background:#184338;color:white!important;padding:10px;border-radius:6px}
+#guide-credit{white-space:pre-line;line-height:1.4}
+.sea-controls{--corner:clamp(90px,15cqw,145px)}
+.sea-controls [data-mode],.sea-controls #confirm-sunk,.sea-controls #reset{position:absolute;width:var(--corner);height:var(--corner);border-radius:0;margin:0;box-sizing:border-box;font-size:clamp(12px,2cqw,16px);line-height:1.15}
+.sea-controls [data-mode=water]{left:0;top:0;clip-path:polygon(0 0,100% 0,0 100%);padding:0 38% 38% 0;padding:0 calc(var(--corner)*.35) calc(var(--corner)*.35) 0}
+.sea-controls [data-mode=hit]{left:0;bottom:0;clip-path:polygon(0 0,100% 100%,0 100%);padding:calc(var(--corner)*.35) calc(var(--corner)*.35) 0 0}
+.sea-history{right:0;top:0;width:var(--corner);height:var(--corner)}
+.sea-controls #reset{right:0;top:0;clip-path:polygon(0 0,100% 0,100% 100%);padding:0 3px calc(var(--corner)*.44) calc(var(--corner)*.37)}
+.sea-history .history-actions{position:absolute;top:100%;right:3px}
+.sink-actions{bottom:0;right:0;width:var(--corner);height:var(--corner)}
+.sea-controls .sink-actions [data-mode=sunk]{position:absolute;right:0;bottom:0;clip-path:polygon(100% 0,100% 100%,0 100%);padding:calc(var(--corner)*.38) 0 0 calc(var(--corner)*.38)}
+.sea-controls #confirm-sunk{top:0;left:0;clip-path:polygon(0 0,100% 0,0 100%);padding:0 calc(var(--corner)*.4) calc(var(--corner)*.38) 3px}
+#cancel-sunk{position:absolute;bottom:6px;right:calc(100% + 6px);white-space:nowrap}
+@media(orientation:landscape) and (pointer:coarse) and (max-height:600px){main{display:flex;flex-direction:column}.play{order:-1}.sea .scene{aspect-ratio:auto;height:86vh;height:calc(100dvh - 26px - env(safe-area-inset-bottom));min-width:0}.sea .board{width:min(61%,105vh);width:min(61%,105dvh)}.sea-controls{--corner:clamp(76px,23dvh,110px)}}
+</style><style>
+.sea-controls{--edge:clamp(6px,1.1cqw,10px);inset:var(--edge);filter:drop-shadow(0 2px 3px #001c2bb3)}
+.sea-controls button{background:rgb(10 62 80 / 72%)}
+.sea-controls button[aria-pressed=true],.sea-controls #confirm-sunk:enabled{background:rgb(249 217 116 / 83%);color:#103746}
+.sea-controls #confirm-sunk:disabled{background:rgb(13 65 77 / 58%);color:#dce8e7;opacity:1}
+.sea-history .history-actions{top:64%;right:38%}
+</style><style>
+/* Rounded triangular silhouettes, including the acute corners. */
+.sea-controls [data-mode],.sea-controls #confirm-sunk,.sea-controls #reset{
+ clip-path:none!important;border:0;background:transparent!important;box-shadow:none;border-radius:0;isolation:isolate
+}
+.sea-controls [data-mode]::before,.sea-controls #confirm-sunk::before,.sea-controls #reset::before{
+ content:"";position:absolute;inset:0;z-index:-1;
+ background:rgb(10 62 80 / 74%);
+ clip-path:shape(from 7px 0,line to calc(100% - 15px) 0,curve to calc(100% - 11px) 10px with calc(100% - 2px) 0 / 100% 2px,line to 10px calc(100% - 11px),curve to 0 calc(100% - 15px) with 2px 100% / 0 calc(100% - 2px),line to 0 7px,curve to 7px 0 with 0 2px / 2px 0,close);
+ border-radius:8px
+}
+.sea-controls [data-mode=water],.sea-controls #confirm-sunk{
+ clip-path:polygon(0 0,100% 0,0 100%)!important;border-radius:9px
+}
+.sea-controls [data-mode=hit]{
+ clip-path:polygon(0 0,100% 100%,0 100%)!important;border-radius:9px
+}
+.sea-controls [data-mode=hit]::before{transform:scaleY(-1)}
+.sea-controls [data-mode=sunk],.sea-controls #reset{
+ clip-path:polygon(0 0,100% 0,100% 100%)!important;border-radius:9px
+}
+.sea-controls #reset::before{transform:scaleX(-1)}
+.sea-controls .sink-actions [data-mode=sunk]{
+ clip-path:polygon(100% 0,100% 100%,0 100%)!important
+}
+.sea-controls [data-mode=sunk]::before{transform:rotate(180deg)}
+.sea-controls [data-mode][aria-pressed=true]::before{background:rgb(249 217 116 / 83%)}
+.sea-controls #confirm-sunk:enabled{color:#fff}
+.sea-controls #confirm-sunk:enabled::before{background:rgb(25 132 112 / 85%)}
+.sea-controls #confirm-sunk:disabled{color:#dce8e7;opacity:.65}
+.sea-controls #confirm-sunk:disabled::before{background:rgb(24 89 99 / 68%)}
+@supports not (clip-path:shape(from 0 0,line to 100% 0,line to 0 100%,close)){
+ .sea-controls [data-mode],.sea-controls #confirm-sunk,.sea-controls #reset{
+ filter:url(#round-button)
+ }
+ .sea-controls [data-mode]::before,.sea-controls #confirm-sunk::before,.sea-controls #reset::before{clip-path:polygon(0 0,100% 0,0 100%)}
+}
+</style></head>
+<body><svg width="0" height="0" aria-hidden="true" style="position:absolute"><defs><filter id="round-button" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/><feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 20 -9"/></filter></defs></svg>
 <header class="mast"><div class="mast-inner">
-  <h1>海岛奇兵·声呐鱼雷命中率助手</h1>
+  <h1>《海岛奇兵》声呐小助手</h1>
   <div class="help-tools">
-    <span id="guide-credit">F3.3 · 作者：家恩宝贝 · 助手：GPT-6.2 Astra</span>
+    <span id="guide-credit">版本号：F4.2
+作者：家恩宝贝
+助理：GPT-6.2 Astra</span>
     <button type="button" id="guide-open" aria-haspopup="dialog" aria-controls="guide-dialog">使用说明</button>
     <button type="button" id="faq-open" aria-haspopup="dialog" aria-controls="guide-dialog">常见问题</button>
-    <a href="./contact.html" id="contact-link" class="contact-link" data-word="contact">联系我</a>
-    <select id="languageToggle" aria-label="选择语言">
-      <option value="zh" lang="zh-CN">简体中文</option>
-      <option value="zh-Hant" lang="zh-Hant">繁體中文</option>
-      <option value="en" lang="en">English</option>
-      <option value="ja" lang="ja">日本語</option>
-    </select>
+    <a href="./contact.html" id="contact-link" class="contact-link" data-word="contact">联系我</a><details class="other-tools"><summary>其它工具</summary><a href="https://tatsu2026.github.io/boom-planner/">小队长抽取规划器</a></details>
+    
   </div>
 </div></header>
 <main>
@@ -271,7 +325,7 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
     <hr>
     <h2>已击沉</h2>
     <div id="sunk-list"></div>
-    <div class="actions file-actions"><button id="export" type="button">导出</button><button id="import" type="button">导入</button><input id="file" type="file" accept=".json,application/json" hidden></div>
+    
     <p class="note" id="save" role="status"></p>
   </aside>
   <section class="card play" aria-labelledby="board-title">
@@ -330,532 +384,7 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
 
 </dialog>
 <script>(() => {
-  const copy = {
-  "zh": {
-    "guide": "使用说明",
-    "faq": "常见问题",
-    "close": "关闭",
-    "credit": "F3.3 · 作者：家恩宝贝 · 助手：GPT-6.2 Astra",
-    "sections": [
-      [
-        "选择当前海域",
-        [
-          "海域预设",
-          "选择游戏里的关卡，助手会载入对应的海域边长和舰队，并清空棋盘。第 11 关起共用一套配置。选错关卡时可点撤销。"
-        ],
-        [
-          "自定义",
-          "想改设置时点「自定义」，当前标记会保留。用 − / + 或直接输入数字，调整海域边长、潜艇数量和每艘的长度。每艘至少 2 格，舰队图标上的圆点表示长度。"
-        ]
-      ],
-      [
-        "记录每一发的结果",
-        [
-          "空水",
-          "鱼雷落在空格，选「空水」再点对应格。"
-        ],
-        [
-          "命中",
-          "击中艇身、游戏仍未提示击沉时，逐格记录命中。"
-        ],
-        [
-          "击沉",
-          "游戏提示击沉后，依次点艇身的两个不同端点。两端要在同一行或同一列。核对高亮范围后点「确认击沉」。预览时可改点终点，「取消选取」可重选起点。"
-        ],
-        [
-          "取消标记", "在空水或命中模式下，再点一次相同标记即可取消，也可以使用撤销。"
-        ]
-      ],
-      [
-        "阅读棋盘和推荐",
-        [
-          "棋盘缩放",
-          "手机双指缩放、电脑滚轮缩放，仅改变棋盘大小。海域和操作按钮保持不变。例如 B3 是 B 列、第 3 行。"
-        ],
-        [
-          "图例",
-          "未知格显示命中率，金框标出并列最高的格子。小屏斜视会把百分比取整，可缩放棋盘查看。空水是手动记录的落空位置，「排除空水」是已击沉艇周围自动排除的格子。"
-        ],
-        [
-          "推荐探索",
-          "棋盘下方列出最高概率的坐标和计算状态。并列时可任选一个，发射后按游戏结果更新标记。"
-        ],
-        [
-          "显示百分比",
-          "勾选可查看命中率数字。关闭后可按颜色深浅比较各格，金框仍标出命中率最高的位置。"
-        ]
-      ],
-      [
-        "修改记录或开始下一局",
-        [
-          "已击沉",
-          "确认后会扣除一艘对应长度的潜艇。「修正」可重选终点，想换起点则先移除整条记录，再重新标记。"
-        ],
-        [
-          "↶ / ↷",
-          "撤销上一步或恢复刚撤销的修改。也可按 Ctrl 或 ⌘ 加 Z 撤销，加 Shift 和 Z 恢复。Windows 上也可用 Ctrl+Y 恢复。"
-        ],
-        [
-          "清空",
-          "清除本局的手动标记和击沉记录，保留舰队设置。误点后可立即撤销。"
-        ]
-      ],
-      [
-        "保存、换设备和切换语言",
-        [
-          "导出 / 导入",
-          "棋盘会自动保存在当前浏览器。换设备、换浏览器或需要备份时，点「导出」保存 JSON 进度文件。在另一台设备上打开助手，点「导入」选中该文件。"
-        ],
-        [
-          "语言",
-          "从页首下拉菜单选择简体中文、繁體中文、English 或日本語。切换语言时会保留当前棋盘和正在选择的击沉端点。"
-        ],
-        [
-          "常见问题",
-          "点页首「常见问题」，再点问题标题查看回答，包括概率算法、击沉冲突和进度恢复。"
-        ]
-      ],
-      [
-        "留言与建议",
-        [
-          "留言板",
-          "在页面底部填写昵称和留言，点「发表留言」。发表成功后，其他访问者也能看到你的昵称和内容。「刷新」可读取最新留言，「查看更多」可翻看较早的留言。"
-        ],
-        [
-          "联系我",
-          "从页首打开「联系我」，填写建议。称呼和联系方式都可留空。点「发送建议」即可私下发给作者。"
-        ]
-      ]
-    ],
-    "questions": [
-      [
-        "一个格子的命中率是怎么算的？",
-        "助手把符合舰队设置及全部标记的完整布局视为等可能。假设 20 种合法布局中有 8 种在 B3 放有潜艇，那么 B3 的命中率是 40%。同长度潜艇互换只计一次。"
-      ],
-      [
-        "「精确」「近似」和 0% 分别表示什么？",
-        "精确表示已枚举全部合法布局。海域较大、组合太多时会改用加权抽样。有效样本较少时，推荐可能波动，近似的 0% 只表示本次样本未在该格发现潜艇。"
-      ],
-      [
-        "为什么一圈格子自动变成了「排除空水」？",
-        "计算规则要求潜艇间至少隔一格，包括对角方向。确认击沉后，相邻一圈会自动排除。若位置有误，可在「已击沉」列表修正或移除对应记录。"
-      ],
-      [
-        "为什么「确认击沉」点不了？",
-        "检查两个端点是否不同且同行或同列，所选长度是否与一艘剩余潜艇相符。艇身不能穿过已标记的空水，也不能贴着另一艘已击沉潜艇。棋盘上方会提示冲突原因。"
-      ],
-      [
-        "显示「当前没有合法布局」或「暂未获得可用估算」怎么办？",
-        "没有合法布局时，先核对开局舰队，再检查空水、命中和击沉范围。每艘未击沉的潜艇至少要留一格未命中。暂未获得估算则表示抽样未找到完整布局，补充真实线索后会重新计算。"
-      ],
-      [
-        "进度能带到新版或另一台手机吗？",
-        "可以。在原页面点「导出」，保存 JSON，再在新页面点「导入」选中该文件。旧 F 版若填过 1 格潜艇，先在旧版修正对应舰队和记录，再重新导出。隐私浏览、清除浏览器数据或更换站点地址都可能影响本地自动保存。"
-      ],
-      [
-        "会连接游戏账号或自动发射鱼雷吗？",
-        "你在游戏内发射鱼雷，再把结果手动记在助手里。助手只在本机计算，不需要登录账号、读取游戏画面或安装插件。"
-      ],
-      [
-        "想让作者私下回复，在哪里留联系方式？",
-        "打开「联系我」，在联系方式栏填入你希望作者使用的联系方式。给作者的建议和联系方式仅随表单私下提交。页面底部的留言板对所有访问者公开。"
-      ]
-    ]
-  },
-  "en": {
-    "guide": "Guide",
-    "faq": "FAQ",
-    "close": "Close",
-    "credit": "F3.3 · Author: 家恩宝贝 · Assistant: GPT-6.2 Astra",
-    "sections": [
-      [
-        "Choose your sea zone",
-        [
-          "Zone presets",
-          "Choose the zone shown in the game to load its board size and starting fleet. Selecting a different zone clears the board. Zone 11 and all later zones share one preset. Undo restores your previous board."
-        ],
-        [
-          "Custom",
-          "Select Custom to edit the setup while keeping your marks. Use − / + or type a number to change the board size, the fleet size or a submarine’s length. Each sub spans at least two cells. The dots on its icon show its length."
-        ]
-      ],
-      [
-        "Record the result of a shot",
-        [
-          "Water",
-          "If the torpedo missed, select Water and tap the cell."
-        ],
-        [
-          "Hit",
-          "If the game shows a hit and the sub is still afloat, mark the cell as a hit."
-        ],
-        [
-          "Sunk",
-          "When the game reports a sinking, tap the two distinct ends of the hull in the same row or column. Check the highlighted cells and choose Confirm sinking. Tap another end to adjust the preview, or Cancel to choose a new starting point."
-        ],
-        [
-          "Remove a mark", "Tap the same cell again in Water or Hit mode to remove its mark, or use Undo."
-        ]
-      ],
-      [
-        "Read the board",
-        [
-          "Board zoom",
-          "Pinch with two fingers on a phone, or use the mouse wheel on a computer. Only the board changes size; the sea and buttons stay fixed."
-        ],
-        [
-          "Legend",
-          "Unknown cells show the current odds. Gold outlines mark every cell tied for the best chance. On a small screen, the angled view rounds percentages to whole numbers. Use the flat view for more precision. Swipe sideways on wide boards. Water records a miss. The cells around a sunken sub are ruled out automatically."
-        ],
-        [
-          "Recommendation",
-          "The line below the board lists the best coordinates and shows the calculation status. If several cells tie, choose any one, then record the shot’s result."
-        ],
-        [
-          "Percentages",
-          "Select this option to show the odds as numbers. With the numbers hidden, compare cells by their shading. Gold outlines still mark every cell tied for the highest chance."
-        ]
-      ],
-      [
-        "Correct a mark or start a new round",
-        [
-          "Sunk submarines",
-          "Confirming a sinking uses one sub of that length. Edit lets you change the second end. To change the first end, remove the record and select both ends again."
-        ],
-        [
-          "↶ / ↷",
-          "Undo or redo your last board edit. Use Ctrl+Z or ⌘Z to undo. Use Ctrl+Shift+Z or ⌘⇧Z to redo. Ctrl+Y also works on Windows."
-        ],
-        [
-          "Clear marks",
-          "Clear the marks and sinking records for this round and keep the fleet setup. Undo restores the board if you cleared it by mistake."
-        ]
-      ],
-      [
-        "Save progress and change language",
-        [
-          "Export / Import",
-          "Your board is saved in this browser. To make a backup or move to a different browser or device, export a JSON save. Open the assistant in the new browser and import that file."
-        ],
-        [
-          "Language",
-          "Choose Simplified Chinese, Traditional Chinese, English or Japanese from the menu in the header. Your board and any sinking preview stay in place."
-        ],
-        [
-          "FAQ",
-          "Open FAQ in the header and tap a question to read about the odds, conflicting marks or recovering a save."
-        ]
-      ],
-      [
-        "Messages and feedback",
-        [
-          "Guestbook",
-          "Enter a nickname and a message at the bottom of the page and select Post message. Your nickname and posted message are public. Refresh checks for new posts. Show older messages loads earlier posts."
-        ],
-        [
-          "Contact",
-          "Open Contact in the header to send the author a private suggestion. Enter your feedback and select Send feedback. Your name and contact details are optional."
-        ]
-      ]
-    ],
-    "questions": [
-      [
-        "How are the odds for a cell calculated?",
-        "Each complete layout that fits the fleet and all your marks is treated as equally likely. If 8 of 20 legal layouts put a submarine in B3, the chance for B3 is 40%. Swapping two submarines of the same length counts as the same layout."
-      ],
-      [
-        "What do exact, approximate and 0% mean?",
-        "An exact result counts every legal layout. If the search reaches its limit, the assistant estimates the odds using weighted random samples. With few effective samples, the recommendations can vary. An approximate 0% means that none of the samples placed a sub in that cell."
-      ],
-      [
-        "Why are the cells around a sunken sub ruled out?",
-        "The calculation requires a gap between submarines, including at the corners. Confirming a sinking rules out the surrounding ring. If the position is wrong, edit or remove that sinking record."
-      ],
-      [
-        "Why is Confirm sinking unavailable?",
-        "Choose two different ends in the same row or column. The length must match a remaining sub. Its hull must avoid recorded water and keep a gap from other sunken subs. Look above the board for the reason a selection was rejected."
-      ],
-      [
-        "Why are there no legal layouts or no estimate?",
-        "If the search proves there are no legal layouts, check the starting fleet, misses, hits and sunken hulls. Every sub still afloat must have at least one unhit cell. If sampling found no complete layout, the search is inconclusive. Add another result from the game to recalculate."
-      ],
-      [
-        "Can I move my progress to a new version or phone?",
-        "Yes. Export a JSON save on the original page, then import it on the new page. If an older F save contains a one-cell submarine, correct the fleet and its sinking record in the old version before exporting. Private browsing, clearing browser data or opening the site at a different address may affect local saves."
-      ],
-      [
-        "Does the assistant use my account or fire torpedoes?",
-        "You fire each shot in the game and record the result here. The assistant calculates locally. It requires no account login, game screen access or plug-in."
-      ],
-      [
-        "Where can I leave contact details for a private reply?",
-        "Use Contact and enter the address or handle you would like the author to use. Your suggestion and contact details are sent privately. Messages posted in the guestbook are visible to everyone."
-      ]
-    ]
-  },
-  "ja": {
-    "guide": "使い方",
-    "faq": "よくある質問",
-    "close": "閉じる",
-    "credit": "F3.3 · 作者：家恩宝贝 · アシスタント：GPT-6.2 Astra",
-    "sections": [
-      [
-        "プレイ中の海域を選ぶ",
-        [
-          "海域プリセット",
-          "ゲームと同じ海域を選ぶと、その海域の大きさと開始時の艦隊が読み込まれます。別の海域に切り替えると盤面はクリアされます。第11海域以降はすべて共通の設定です。選び間違えたら「元に戻す」を押してください。"
-        ],
-        [
-          "カスタム",
-          "「カスタム」を選ぶと、マークを残したまま設定を編集できます。− / + ボタンか数値入力で、海域の一辺のマス数、潜水艦の数、各艦の長さを設定します。潜水艦は最短2マスです。艦のアイコンの丸は長さを表します。"
-        ]
-      ],
-      [
-        "魚雷の結果を記録する",
-        [
-          "空振り",
-          "魚雷が外れたら「空振り」を選び、該当のマスをタップします。"
-        ],
-        [
-          "命中",
-          "当たってもまだ沈んでいないときは、命中したマスに印を付けます。"
-        ],
-        [
-          "撃沈",
-          "ゲームで撃沈を確認したら、同じ行か列にある艦の両端を 1 マスずつ選びます。範囲を確認して「撃沈を確定」を押します。確定前は終点を選び直せます。「キャンセル」で始点から選び直せます。"
-        ],
-        [
-          "マークを取り消す", "同じモードでもう一度マスをタップすると印を消せます。「元に戻す」も使えます。"
-        ]
-      ],
-      [
-        "盤面とおすすめマスを読む",
-        [
-          "盤面の拡大・縮小",
-          "スマートフォンは2本指、PCはマウスホイールで盤面だけ拡大・縮小できます。海面とボタンのサイズは変わりません。"
-        ],
-        [
-          "凡例",
-          "未探索のマスには命中率が表示されます。金色の枠は命中率が最も高いマスです。小さい画面の斜め表示では整数に丸めています。細かい値は平面表示で確認できます。盤面が画面に収まらないときは左右にスワイプしてください。「空振り」は記録した着弾点で、撃沈した艦の周囲は自動で候補から外れます。"
-        ],
-        [
-          "おすすめ",
-          "盤面の下におすすめの座標と計算状況が表示されます。同率のマスが複数あればどれを選んでも構いません。撃ったら結果を入力してください。"
-        ],
-        [
-          "確率を表示",
-          "チェックを入れると命中率が数字で表示されます。チェックを外しても色の濃淡で確率を比較できます。命中率が最も高いマスには金色の枠が付きます。"
-        ]
-      ],
-      [
-        "記録を修正する・次の海域に進む",
-        [
-          "撃沈済み",
-          "撃沈を確定すると、同じ長さの艦の残数が 1 隻減ります。「修正」で終点を選び直せます。始点を変えるには、記録を「削除」して両端を選び直します。"
-        ],
-        [
-          "↶ / ↷",
-          "直前の編集を元に戻すか、取り消した編集をやり直します。元に戻すには Ctrl+Z または ⌘Z、やり直すには Ctrl+Shift+Z または ⌘⇧Z を使えます。Windows では Ctrl+Y でもやり直せます。"
-        ],
-        [
-          "マークをクリア",
-          "艦隊の設定を残して、マスの印と撃沈記録を消します。間違えて消した場合は、すぐに「元に戻す」を押してください。"
-        ]
-      ],
-      [
-        "保存と表示言語",
-        [
-          "書き出し / 読み込み",
-          "盤面はこのブラウザーに自動保存されます。バックアップを取るときや端末・ブラウザーを替えるときは、進行状況を JSON ファイルに書き出してください。移行先でこのページを開き、保存したファイルを読み込みます。"
-        ],
-        [
-          "言語",
-          "ページ上部のメニューで簡体字中国語、繁体字中国語、英語、日本語を選べます。切り替えても編集中の盤面や撃沈のプレビューは引き継がれます。"
-        ],
-        [
-          "よくある質問",
-          "画面上部の「よくある質問」を開き、質問をタップすると、確率の計算方法や撃沈記録の直し方などを確認できます。"
-        ]
-      ],
-      [
-        "掲示板とお問い合わせ",
-        [
-          "掲示板",
-          "ページの一番下でニックネームとメッセージを入力して「投稿する」を押します。投稿が完了すると、ニックネームとメッセージが公開されます。「更新」で新着を確認でき、「以前の投稿を表示」で古い投稿も読めます。"
-        ],
-        [
-          "お問い合わせ",
-          "ページ上部の「お問い合わせ」から作者に直接ご意見を送れます。内容を入力して「送信する」を押してください。お名前と連絡先は任意です。"
-        ]
-      ]
-    ],
-    "questions": [
-      [
-        "各マスの命中率はどうやって求めていますか？",
-        "艦隊とすべての印に合う配置が、どれも同じ確率で出ると仮定しています。例えば可能な配置が 20 通りあり、そのうち 8 通りで B3 に潜水艦がいれば、B3 の命中率は 40% です。同じ長さの艦を入れ替えただけの配置は 1 通りと数えます。"
-      ],
-      [
-        "「厳密」「近似」や 0% はどういう意味ですか？",
-        "厳密な計算では可能な配置をすべて数えます。探索が上限に達すると、重み付きのランダムサンプリングで推定します。有効なサンプルが少ないと、おすすめのマスが変動することがあります。近似の 0% は、今回のサンプルではそのマスに艦が見つからなかったことを表します。"
-      ],
-      [
-        "撃沈した艦の周囲が自動で除外されるのはなぜですか？",
-        "計算では、潜水艦同士は斜め方向も含めて隣り合わないという条件を使います。撃沈を確定すると、艦の周囲 1 マスが候補から外れます。位置を間違えたときは「撃沈済み」の記録を修正するか削除してください。"
-      ],
-      [
-        "「撃沈を確定」が押せません。",
-        "同じ行か列から、異なる 2 つの端点を選んでください。長さが残っている艦と合うか、途中に空振りのマスがないか、別の撃沈済みの艦に接していないかを確認します。選択できない理由は盤面の上に表示されます。"
-      ],
-      [
-        "可能な配置がない、または推定できないと表示されます。",
-        "可能な配置がないときは、開始時の艦隊、空振り、命中、撃沈範囲を見直してください。撃沈前の艦には少なくとも 1 マス未命中の部分が必要です。サンプリングで配置が見つからなかった場合は結果が未確定です。ゲームで得た次の手掛かりを入力すると再計算します。"
-      ],
-      [
-        "新版や別のスマートフォンに引き継げますか？",
-        "元の画面で「書き出し」を押して JSON ファイルを保存し、新しい画面で「読み込み」を選びます。旧 F 版で 1 マスの艦を入力した場合は、旧版で艦隊と該当する撃沈記録を修正してから書き出してください。プライベートブラウズ、閲覧データの削除、サイトのアドレス変更などで自動保存を引き継げないことがあります。"
-      ],
-      [
-        "ゲームとの連携や魚雷の自動発射はありますか？",
-        "魚雷はゲーム内で発射し、結果をこの画面に手動で記録します。計算は端末内で完結します。アカウントへのログイン、ゲーム画面の読み取り、プラグインのインストールは不要です。"
-      ],
-      [
-        "個別の返信を希望するときはどこに連絡先を書けばよいですか？",
-        "「お問い合わせ」の連絡先欄に、返信を希望するアドレスなどをご記入ください。内容と連絡先は作者に非公開で送られます。ページ下部の掲示板に投稿した内容は、どなたでも閲覧できます。"
-      ]
-    ]
-  },
-  "zh-Hant": {
-    "guide": "使用說明",
-    "faq": "常見問題",
-    "close": "關閉",
-    "credit": "F3.3 · 作者：家恩宝贝 · 助手：GPT-6.2 Astra",
-    "sections": [
-      [
-        "選擇目前的海域",
-        [
-          "海域預設",
-          "選擇遊戲中的關卡，即可載入該關的海域邊長與開局艦隊。切換關卡會清空棋盤。第 11 關起共用同一套配置。選錯關卡可點「復原」。"
-        ],
-        [
-          "自訂",
-          "點「自訂」可保留目前的標記並開放編輯。用 − / + 或直接輸入數字來調整海域邊長、潛艇數量及各艇長度。每艘至少占 2 格，艦隊圖示上的圓點代表長度。"
-        ]
-      ],
-      [
-        "記錄每一發魚雷的結果",
-        [
-          "空水",
-          "魚雷落空時，選「空水」再點對應的格子。"
-        ],
-        [
-          "命中",
-          "魚雷擊中艇身、遊戲尚未顯示擊沉時，逐格記錄命中。"
-        ],
-        [
-          "擊沉",
-          "遊戲顯示擊沉後，依序點選艇身的兩個不同端點。兩端須在同一列或同一欄。核對範圍後點「確認擊沉」。預覽時可改選終點，或點「取消選取」重新選擇起點。"
-        ],
-        [
-          "取消标记", "在空水或命中模式下，再点一次相同标记即可取消，也可以使用撤销。"
-        ]
-      ],
-      [
-        "閱讀棋盤與推薦",
-        [
-          "棋盤縮放",
-          "手機雙指、電腦滑鼠滾輪可縮放棋盤，海域和按鈕大小保持不變。"
-        ],
-        [
-          "圖例",
-          "未知格預設顯示命中率，金框標出機率並列最高的位置。小螢幕的斜視模式會將百分比四捨五入成整數，平視可查看較細的數值。棋盤較寬時可左右滑動。空水是手動記錄的落空位置，「排除空水」是擊沉後自動排除的鄰近格。"
-        ],
-        [
-          "推薦探索",
-          "棋盤下方列出命中率最高的座標與計算狀態。有多格並列時可任選一格，發射後再依遊戲結果更新標記。"
-        ],
-        [
-          "顯示百分比",
-          "勾選可顯示命中率數字。關閉後仍可依顏色深淺比較各格，命中率最高的位置也仍有金框。"
-        ]
-      ],
-      [
-        "修正紀錄或開始下一局",
-        [
-          "已擊沉",
-          "確認擊沉時，會從剩餘艦隊中扣除一艘相應長度的潛艇。「修正」可重選終點。想更改起點，請先移除整筆紀錄，再重新標記。"
-        ],
-        [
-          "↶ / ↷",
-          "復原上一步或重做剛才復原的操作。Ctrl+Z 或 ⌘Z 可復原，Ctrl+Shift+Z 或 ⌘⇧Z 可重做。Windows 也可按 Ctrl+Y 重做。"
-        ],
-        [
-          "清空標記",
-          "清除本局的手動標記和擊沉紀錄，保留艦隊設定。誤點後可立即復原。"
-        ]
-      ],
-      [
-        "儲存、換裝置與切換語言",
-        [
-          "匯出 / 匯入",
-          "棋盤會自動儲存在目前的瀏覽器。換裝置、換瀏覽器或備份時，點「匯出」儲存 JSON 進度檔。到另一台裝置開啟助手，再點「匯入」選取該檔案。"
-        ],
-        [
-          "語言",
-          "從頁首的下拉選單選擇简体中文、繁體中文、English 或日本語。切換時會保留棋盤和正在選擇的擊沉端點。"
-        ],
-        [
-          "常見問題",
-          "從頁首開啟「常見問題」，點問題即可閱讀有關機率、標記衝突或進度還原的解答。"
-        ]
-      ],
-      [
-        "留言與建議",
-        [
-          "留言板",
-          "在頁面底部輸入暱稱和留言，再點「發表留言」。發表成功後，其他訪客也能看到你的暱稱與留言。點「重新整理」可讀取最新留言，點「顯示更多」可瀏覽較舊的留言。"
-        ],
-        [
-          "聯絡我",
-          "從頁首開啟「聯絡我」，填寫建議。稱呼與聯絡方式都可留白，點「送出建議」即可私下送給作者。"
-        ]
-      ]
-    ],
-    "questions": [
-      [
-        "每一格的命中率如何計算？",
-        "助手將符合艦隊設定與所有標記的完整配置視為等可能。例如有 20 種符合條件的配置，其中 8 種在 B3 放有潛艇，則 B3 的命中率為 40%。兩艘長度相同的潛艇互換只算一種配置。"
-      ],
-      [
-        "「精確」「近似」和 0% 各代表什麼？",
-        "精確表示已列舉所有符合條件的配置。當組合太多而達到搜尋上限，助手會改用加權隨機抽樣估算。有效樣本較少時，推薦可能波動。近似的 0% 表示此次樣本中沒有在該格發現潛艇。"
-      ],
-      [
-        "為什麼周圍一圈會自動變成「排除空水」？",
-        "計算時假設潛艇之間至少隔一格，包含對角線方向。確認擊沉後，周圍一圈就會從候選位置排除。若位置有誤，可在「已擊沉」清單修正或移除該筆紀錄。"
-      ],
-      [
-        "為什麼不能按「確認擊沉」？",
-        "請檢查兩個端點是否不同、是否在同一列或同一欄，以及長度是否符合一艘剩餘潛艇。艇身不能穿過已標記的空水，也不能緊鄰其他已擊沉的潛艇。棋盤上方會顯示原因。"
-      ],
-      [
-        "顯示沒有符合條件的配置，或暫時無法估算時怎麼辦？",
-        "找不到符合條件的配置時，請核對開局艦隊，再檢查空水、命中與擊沉範圍。尚未擊沉的潛艇至少要留一格未命中。若抽樣沒有找到完整配置，結果仍未確定。記錄下一個遊戲線索時會再計算。"
-      ],
-      [
-        "如何在新版或另一支手機上接續進度？",
-        "先在原頁面點「匯出」，儲存 JSON 進度檔，再到新頁面點「匯入」並選取檔案。舊 F 版若含有單格潛艇，請先在舊版修正艦隊與相關擊沉紀錄後再匯出。私密瀏覽、清除瀏覽資料或更換網站位址都可能影響自動儲存的進度。"
-      ],
-      [
-        "助手會連接遊戲帳號或自行發射魚雷嗎？",
-        "請在遊戲中發射魚雷，再將結果手動記錄在棋盤上。助手會在你的裝置上計算，不需要登入遊戲帳號、讀取遊戲畫面或安裝外掛。"
-      ],
-      [
-        "想請作者私下回覆，應該在哪裡留下聯絡方式？",
-        "請開啟「聯絡我」，在聯絡方式欄填入方便收取回覆的信箱或其他聯絡方式。建議與聯絡方式會隨表單私下送給作者。頁面底部的留言板則對所有訪客開放瀏覽。"
-      ]
-    ]
-  }
-};
+  const copy = {"zh":{"guide":"使用说明","faq":"常见问题","close":"关闭","credit":"版本号：F4.2\n作者：家恩宝贝\n助理：GPT-6.2 Astra","sections":[["选择当前海域",["海域预设","选择游戏里的关卡，助手会载入对应的海域边长和舰队，并清空棋盘。11~99号海域共用一套配置。选错关卡时可点撤销。"],["自定义","想改设置时点「自定义」，当前标记会保留。用 − / + 或直接输入数字，调整海域边长、潜艇数量和每艘的长度。每艘至少 2 格，舰队图标上的圆点表示长度。"]],["记录每一发的结果",["空水","鱼雷落在空格，选「空水」再点对应格。"],["命中","击中艇身、游戏仍未提示击沉时，逐格记录命中。"],["击沉","游戏提示击沉后，依次点艇身的两个不同端点。两端要在同一行或同一列。核对高亮范围后点「确认击沉」。预览时可改点终点，「取消选取」可重选起点。"],["取消标记","在空水或命中模式下，再点一次相同标记即可取消，也可以使用撤销。"]],["阅读棋盘和推荐",["棋盘缩放","手机双指缩放、电脑滚轮缩放，仅改变棋盘大小。海域和操作按钮保持不变。例如 B3 是 B 列、第 3 行。"],["图例","未知格显示命中率，金框标出并列最高的格子。小屏斜视会把百分比取整，可缩放棋盘查看。空水是手动记录的落空位置，「排除空水」是已击沉艇周围自动排除的格子。"],["推荐探索","棋盘下方列出最高概率的坐标和计算状态。并列时可任选一个，发射后按游戏结果更新标记。"],["显示百分比","勾选可查看命中率数字。关闭后可按颜色深浅比较各格，金框仍标出命中率最高的位置。"]],["修改记录或开始下一局",["已击沉","确认后会扣除一艘对应长度的潜艇。「修正」可重选终点，想换起点则先移除整条记录，再重新标记。"],["↶ / ↷","撤销上一步或恢复刚撤销的修改。也可按 Ctrl 或 ⌘ 加 Z 撤销，加 Shift 和 Z 恢复。Windows 上也可用 Ctrl+Y 恢复。"],["清空","清除本局的手动标记和击沉记录，保留舰队设置。误点后可立即撤销。"]],["保存进度",["自动保存","当前棋盘会自动保存在此浏览器中。"]],["留言与建议",["留言板","在页面底部填写昵称和留言，点「发表留言」。发表成功后，其他访问者也能看到你的昵称和内容。「刷新」可读取最新留言，「查看更多」可翻看较早的留言。"],["联系我","从页首打开「联系我」，填写建议。称呼和联系方式都可留空。点「发送建议」即可私下发给作者。"]]],"questions":[["一个格子的命中率是怎么算的？","助手把符合舰队设置及全部标记的完整布局视为等可能。假设 20 种合法布局中有 8 种在 B3 放有潜艇，那么 B3 的命中率是 40%。同长度潜艇互换只计一次。"],["「精确」「近似」和 0% 分别表示什么？","精确表示已枚举全部合法布局。海域较大、组合太多时会改用加权抽样。有效样本较少时，推荐可能波动，近似的 0% 只表示本次样本未在该格发现潜艇。"],["为什么一圈格子自动变成了「排除空水」？","计算规则要求潜艇间至少隔一格，包括对角方向。确认击沉后，相邻一圈会自动排除。若位置有误，可在「已击沉」列表修正或移除对应记录。"],["为什么「确认击沉」点不了？","检查两个端点是否不同且同行或同列，所选长度是否与一艘剩余潜艇相符。艇身不能穿过已标记的空水，也不能贴着另一艘已击沉潜艇。棋盘上方会提示冲突原因。"],["显示「当前没有合法布局」或「暂未获得可用估算」怎么办？","没有合法布局时，先核对开局舰队，再检查空水、命中和击沉范围。每艘未击沉的潜艇至少要留一格未命中。暂未获得估算则表示抽样未找到完整布局，补充真实线索后会重新计算。"],["会连接游戏账号或自动发射鱼雷吗？","你在游戏内发射鱼雷，再把结果手动记在助手里。助手只在本机计算，不需要登录账号、读取游戏画面或安装插件。"],["想让作者私下回复，在哪里留联系方式？","打开「联系我」，在联系方式栏填入你希望作者使用的联系方式。给作者的建议和联系方式仅随表单私下提交。页面底部的留言板对所有访问者公开。"]]}};
   const dialog = document.getElementById("guide-dialog");
   const content = document.getElementById("guide-content");
   const title = document.getElementById("guide-title");
@@ -1083,562 +612,14 @@ function startingBoard(stage) {
 const defaults = startingBoard(1);
 const $ = id => document.getElementById(id);
 
-const translations = {
-  "海岛奇兵·声呐鱼雷命中率助手": [
-    "Boom Beach · Sonar Assistant",
-    "ブーム・ビーチ ソナーアシスタント",
-    "海島奇兵·聲納魚雷命中率助手"
-  ],
-  "撤销": [
-    "Undo",
-    "元に戻す",
-    "復原"
-  ],
-  "撤销（Ctrl+Z）": [
-    "Undo (Ctrl+Z)",
-    "元に戻す（Ctrl+Z）",
-    "復原（Ctrl+Z）"
-  ],
-  "恢复刚才撤销的操作": [
-    "Redo",
-    "やり直す",
-    "重做剛才復原的操作"
-  ],
-  "恢复刚才撤销的操作（Ctrl+Y）": [
-    "Redo (Ctrl+Y)",
-    "やり直す（Ctrl+Y）",
-    "重做剛才復原的操作（Ctrl+Y）"
-  ],
-  "导出": [
-    "Export",
-    "書き出し",
-    "匯出"
-  ],
-  "导入": [
-    "Import",
-    "読み込み",
-    "匯入"
-  ],
-  "海域与舰队": [
-    "Sea & fleet",
-    "海域と艦隊",
-    "海域與艦隊"
-  ],
-  "每艘潜艇的长度": [
-    "Submarine lengths",
-    "潜水艦の長さ",
-    "每艘潛艇的長度"
-  ],
-  "填入开局舰队。标记击沉后会自动扣除对应长度。": [
-    "Enter your starting fleet. A confirmed sinking accounts for one submarine of that length.",
-    "開始時の艦隊を入力します。撃沈を確定すると、同じ長さの潜水艦が残りの艦隊から1隻引かれます。",
-    "填入開局艦隊。標記擊沉後會自動扣除相應長度的潛艇。"
-  ],
-  "已击沉": [
-    "Sunk",
-    "撃沈済み",
-    "已擊沉"
-  ],
-  "探索棋盘": [
-    "Search board",
-    "探索盤",
-    "探索棋盤"
-  ],
-  "棋盘视角": [
-    "Board view",
-    "盤面の視点",
-    "棋盤視角"
-  ],
-  "斜视": [
-    "Perspective",
-    "斜め",
-    "斜視"
-  ],
-  "平视": [
-    "Top-down",
-    "真上",
-    "平視"
-  ],
-  "清空": [
-    "Clear marks",
-    "マークをクリア",
-    "清空標記"
-  ],
-  "标记模式": [
-    "Marking mode",
-    "マークの種類",
-    "標記模式"
-  ],
-  "空水": [
-    "Water",
-    "空振り",
-    "空水"
-  ],
-  "命中": [
-    "Hit",
-    "命中",
-    "命中"
-  ],
-  "击沉": [
-    "Sunk",
-    "撃沈",
-    "擊沉"
-  ],
-  "擦除": [
-    "Remove a mark", "Tap the same cell again in Water or Hit mode to remove its mark, or use Undo.",
-    "擦除"
-  ],
-  "确认击沉": [
-    "Confirm sinking",
-    "撃沈を確定",
-    "確認擊沉"
-  ],
-  "取消选取": [
-    "Cancel",
-    "キャンセル",
-    "取消選取"
-  ],
-  "探索棋盘，可横向滚动": [
-    "Search board, scroll horizontally if needed",
-    "探索盤。横にスクロールできます",
-    "探索棋盤，可左右捲動"
-  ],
-  "棋盘图例": [
-    "Board legend",
-    "盤面の凡例",
-    "棋盤圖例"
-  ],
-  "未知": [
-    "Unknown",
-    "未探索",
-    "未知"
-  ],
-  "排除空水": [
-    "Ruled out",
-    "除外済み",
-    "排除空水"
-  ],
-  "命中": [
-    "Hit",
-    "命中",
-    "命中"
-  ],
-  "最高概率": [
-    "Best chance",
-    "最高確率",
-    "最高機率"
-  ],
-  "未击沉": [
-    "Afloat",
-    "未撃沈",
-    "未擊沉"
-  ],
-  "沉": [
-    "S",
-    "沈",
-    "沉"
-  ],
-  "海域边长": [
-    "Board size",
-    "海域の一辺",
-    "海域邊長"
-  ],
-  "潜艇数量": [
-    "Submarines",
-    "潜水艦の数",
-    "潛艇數量"
-  ],
-  "第 {n} 艘": [
-    "Submarine {n}",
-    "潜水艦 {n}",
-    "第 {n} 艘"
-  ],
-  "{name} · {n} 格 · {status}": [
-    "{name} · {n} cells · {status}",
-    "{name} · {n} マス · {status}",
-    "{name} · {n} 格 · {status}"
-  ],
-  "减少{label}": [
-    "Decrease {label}",
-    "{label}を減らす",
-    "減少{label}"
-  ],
-  "增加{label}": [
-    "Increase {label}",
-    "{label}を増やす",
-    "增加{label}"
-  ],
-  "暂无记录": [
-    "No sinkings recorded.",
-    "撃沈の記録はまだありません。",
-    "尚無紀錄"
-  ],
-  "修正": [
-    "Edit",
-    "修正",
-    "修正"
-  ],
-  "移除": [
-    "Remove",
-    "削除",
-    "移除"
-  ],
-  "修正 {label} 的击沉记录": [
-    "Edit sinking at {label}",
-    "{label} の撃沈記録を修正",
-    "修正 {label} 的擊沉紀錄"
-  ],
-  "移除 {label} 的击沉记录": [
-    "Remove sinking at {label}",
-    "{label} の撃沈記録を削除",
-    "移除 {label} 的擊沉紀錄"
-  ],
-  "{label} · {n} 格": [
-    "{label} · {n} cells",
-    "{label} · {n} マス",
-    "{label} · {n} 格"
-  ],
-  "，最高概率": [
-    ", best chance",
-    "、最高確率",
-    "，最高機率"
-  ],
-  "，击沉预览": [
-    ", sinking preview",
-    "、撃沈のプレビュー",
-    "，擊沉預覽"
-  ],
-  "估算推荐": [
-    "Estimated best shots",
-    "推定のおすすめ",
-    "估算推薦"
-  ],
-  "推荐探索": [
-    "Best shots",
-    "おすすめ",
-    "推薦探索"
-  ],
-  " 等 {n} 格": [
-    " ({n} cells tied)",
-    " ほか、計{n}マス",
-    " 等 {n} 格"
-  ],
-  "所有潜艇已击沉": [
-    "All submarines sunk",
-    "すべての潜水艦を撃沈しました",
-    "所有潛艇已擊沉"
-  ],
-  "没有可推荐的未知格": [
-    "No unexplored cells to recommend",
-    "おすすめの未探索マスはありません",
-    "沒有可推薦的未知格"
-  ],
-  "当前没有合法布局": [
-    "No layout fits these marks",
-    "条件に合う配置がありません",
-    "目前沒有符合條件的配置"
-  ],
-  "暂未获得可用估算": [
-    "No estimate available yet",
-    "まだ確率を推定できません",
-    "暫時無法估算"
-  ],
-  "正在推算…": [
-    "Calculating…",
-    "計算中…",
-    "正在推算…"
-  ],
-  "计算未能完成，可修改一个标记后重试。": [
-    "Calculation stopped. Change a mark to try again.",
-    "計算を完了できませんでした。マークを変更して再計算してください。",
-    "計算未能完成，可修改一個標記後再試。"
-  ],
-  "精确 · {n} 种合法布局": [
-    "Exact · Valid layouts: {n}",
-    "厳密計算 · 条件に合う配置 {n} 通り",
-    "精確 · {n} 種符合條件的配置"
-  ],
-  "精确 · 请核对舰队设置、标记和间隔。": [
-    "Exact · Check the fleet, marks and spacing between submarines.",
-    "厳密計算 · 艦隊の設定、マーク、潜水艦の間隔を確認してください。",
-    "精確 · 請核對艦隊設定、標記和間距。"
-  ],
-  "近似 · {n} 份有效样本 / {tries} 次尝试 · 加权有效样本约 {eff}": [
-    "Estimate · Valid samples: {n} / attempts: {tries} · Effective sample size ≈ {eff}",
-    "推定 · 有効サンプル {n} 件 / 試行 {tries} 回 · 重み付き有効サンプル数 約 {eff}",
-    "近似 · {n} 份有效樣本 / {tries} 次嘗試 · 加權後的有效樣本數約為 {eff}"
-  ],
-  " · 样本较少": [
-    " · Small sample",
-    " · サンプルが少なめです",
-    " · 樣本較少"
-  ],
-  "近似 · {n} 次抽样均未完成合法布局。": [
-    "Estimate · No valid layout in {n} sampling attempts. ",
-    "推定 · {n} 回のサンプリングで条件に合う配置を構成できませんでした。",
-    "近似 · {n} 次抽樣都沒有找到符合條件的完整配置。"
-  ],
-  "枚举阶段曾找到合法布局。": [
-    "The initial search did find a valid layout.",
-    "最初の探索では条件に合う配置が見つかっています。",
-    "列舉時曾找到符合條件的配置。"
-  ],
-  "尚无法判断是否存在合法布局。": [
-    "A valid layout may still exist.",
-    "条件に合う配置が存在するかはまだ判定できません。",
-    "目前無法判斷是否有符合條件的配置。"
-  ],
-  "海域或舰队设置无效。": [
-    "Invalid board or fleet settings.",
-    "海域または艦隊の設定が無効です。",
-    "海域或艦隊設定無效。"
-  ],
-  "棋盘标记无效。": [
-    "Invalid board marks.",
-    "盤面に無効なマークがあります。",
-    "棋盤標記無效。"
-  ],
-  "击沉记录无效。": [
-    "Invalid sinking record.",
-    "撃沈記録が無効です。",
-    "擊沉紀錄無效。"
-  ],
-  "击沉记录与舰队、空水或其他已击沉潜艇冲突。": [
-    "This sinking conflicts with the fleet, a water mark or another sunk submarine.",
-    "この撃沈記録は、艦隊の設定、空振りのマス、または他の撃沈済み潜水艦と矛盾しています。",
-    "擊沉紀錄與艦隊、空水或其他已擊沉潛艇衝突。"
-  ],
-  "击沉潜艇周围一圈还有命中标记，请先核对。": [
-    "Check the hit marks around this submarine. The surrounding cells must be empty.",
-    "潜水艦の周囲に命中マークが残っています。周囲1マスを確認してください。",
-    "擊沉潛艇周圍一圈還有命中標記，請先核對。"
-  ],
-  "无法读取上次的自动保存。可使用导入恢复。": [
-    "Could not read the last autosave. Import a backup to restore progress.",
-    "前回の自動保存を読み込めませんでした。バックアップファイルを読み込んで復元できます。",
-    "無法讀取上次自動儲存的進度。可匯入備份來還原。"
-  ],
-  "浏览器未能自动保存，请用导出备份。": [
-    "Autosave failed. Export a backup of your progress.",
-    "自動保存できませんでした。進行状況を書き出して保存してください。",
-    "瀏覽器無法自動儲存，請匯出備份。"
-  ],
-  "已自动保存到此浏览器": [
-    "Saved in this browser",
-    "このブラウザーに自動保存しました",
-    "已自動儲存到此瀏覽器"
-  ],
-  "修改后将在此浏览器自动保存": [
-    "Changes are saved in this browser",
-    "変更内容はこのブラウザーに自動保存されます",
-    "變更後會自動儲存到此瀏覽器"
-  ],
-  "标记命中但未击沉的格子。若游戏已显示击沉，请用「击沉」标记整艘潜艇。": [
-    "Mark a hit on a submarine that is still afloat. When it sinks in the game, use Sunk to mark both ends.",
-    "まだ撃沈していない潜水艦に命中したマスを選びます。ゲームで撃沈したら「撃沈」で艦の両端を指定してください。",
-    "標記已命中但尚未擊沉的格子。若遊戲已顯示擊沉，請用「擊沉」標記整艘潛艇。"
-  ],
-  "选择标记类型后点击格子。再次点击同种标记可取消。": [
-    "Choose a marking mode, then tap a cell. Tap the same mark again to remove it.",
-    "マークを選んでマスをタップします。同じマークをもう一度タップすると消えます。",
-    "選擇標記類型後點選格子。再點一次相同的標記即可取消。"
-  ],
-  "点击同一行或同一列的两个不同端点，预览整艘潜艇。每艘至少占 2 格。": [
-    "Tap two different ends in the same row or column to preview the submarine. Each submarine spans at least 2 cells.",
-    "同じ行か列にある別々の2マスを両端としてタップすると、潜水艦全体をプレビューできます。長さは最低2マスです。",
-    "點選同一列或同一欄的兩個不同端點，預覽整艘潛艇。每艘至少占 2 格。"
-  ],
-  "已选起点 {start}。请点另一端。": [
-    "First end: {start}. Tap the other end.",
-    "一方の端に {start} を選びました。もう一方の端をタップしてください。",
-    "已選起點 {start}。請點選另一端。"
-  ],
-  "预览 {start}–{end}（{n} 格）。可继续调整终点，选好后点「确认击沉」。": [
-    "Preview: {start}–{end} ({n} cells). Adjust the endpoint or select Confirm sinking.",
-    "プレビュー：{start}–{end}（{n}マス）。終点を調整するか、「撃沈を確定」を押してください。",
-    "預覽 {start}–{end}（{n} 格）。可繼續調整終點，選好後點「確認擊沉」。"
-  ],
-  " 可继续调整终点。": [
-    " You can adjust the endpoint.",
-    "終点を選び直せます。",
-    " 可繼續調整終點。"
-  ],
-  "新尺寸会截断已击沉潜艇，请先移除对应击沉记录。": [
-    "This size would cut off a sunk submarine. Remove its sinking record first.",
-    "このサイズでは撃沈済みの潜水艦が盤外に出ます。先に該当する撃沈記録を削除してください。",
-    "新的尺寸會截斷已擊沉的潛艇，請先移除該筆擊沉紀錄。"
-  ],
-  "{label}请输入 {min}–{max} 的整数。": [
-    "Enter a whole number from {min} to {max} for {label}.",
-    "{label}には {min}～{max} の整数を入力してください。",
-    "{label}請輸入 {min}–{max} 的整數。"
-  ],
-  "请在「已击沉」列表移除整艘潜艇。": [
-    "Remove the whole submarine from the sunk list.",
-    "「撃沈済み」の一覧から艦ごと削除してください。",
-    "請在「已擊沉」清單中移除整艘潛艇。"
-  ],
-  "这格已由击沉规则排除。": [
-    "This cell is ruled out by a nearby sunk submarine.",
-    "このマスは撃沈済みの潜水艦に隣接するため除外されています。",
-    "這一格已依擊沉規則排除。"
-  ],
-  "击沉潜艇不能占用已标记的空水。": [
-    "A sunk submarine cannot occupy a cell marked as water.",
-    "空振りのマスには撃沈済みの潜水艦を配置できません。",
-    "擊沉潛艇不能占用已標記為空水的格子。"
-  ],
-  "两端必须在同一行或同一列。请重新选择终点。": [
-    "Both ends must be in the same row or column. Choose another endpoint.",
-    "両端は同じ行か同じ列に置いてください。終点を選び直せます。",
-    "兩端必須在同一列或同一欄。請重新選擇終點。"
-  ],
-  "潜艇至少占 2 格，请选择另一个端点。": [
-    "Submarines span at least 2 cells. Choose a different endpoint.",
-    "潜水艦は最低2マスです。別のマスを終点に選んでください。",
-    "潛艇至少占 2 格，請選擇另一個端點。"
-  ],
-  "舰队中有单格潜艇。请在旧版将长度改为至少 2 格，再导出进度。": [
-    "This fleet contains a one-cell submarine. In the older version, set its length to at least 2 and export again.",
-    "艦隊に長さ1マスの潜水艦が含まれています。旧版で長さを2マス以上に変更し、再度書き出してください。",
-    "艦隊中有單格潛艇。請在舊版將長度改為至少 2 格，再匯出進度。"
-  ],
-  "旧进度含单格潜艇。请在旧版修正后重新导入。": [
-    "Your old save contains a one-cell submarine. Correct it in the older version, then import it again.",
-    "以前の記録に長さ1マスの潜水艦が含まれています。旧版で修正してから読み込み直してください。",
-    "舊進度含有單格潛艇。請在舊版修正後重新匯入。"
-  ],
-  "文件过大，请选择本工具导出的进度文件。": [
-    "This file is too large. Select a progress file exported by this assistant.",
-    "ファイルが大きすぎます。このツールで書き出したファイルを選んでください。",
-    "檔案過大，請選擇由本工具匯出的進度檔。"
-  ],
-  "文件无法读取或不是有效的 JSON。": [
-    "The file could not be read as valid JSON.",
-    "有効なJSONファイルとして読み込めませんでした。",
-    "無法讀取檔案，或檔案並非有效的 JSON。"
-  ],
-  "请选择本工具导出的进度文件。": [
-    "Select a progress file exported by this assistant.",
-    "このツールで書き出したファイルを選んでください。",
-    "請選擇由本工具匯出的進度檔。"
-  ],
-  "已导入探索进度。可撤销此次导入。": [
-    "Progress imported. Use Undo to reverse the import.",
-    "探索の進行状況を読み込みました。「元に戻す」で取り消せます。",
-    "已匯入探索進度。可復原這次匯入。"
-  ],
-  "该进度与当前棋盘相同。": [
-    "This file matches the current board.",
-    "現在の盤面と同じ内容です。",
-    "這份進度與目前的棋盤相同。"
-  ],
-  "选择语言": [
-    "Choose language",
-    "言語を選択",
-    "選擇語言"
-  ]
-};
-const languages = ["zh", "zh-Hant", "en", "ja"];
-const translationIndex = {en:0, ja:1, "zh-Hant":2};
-const locale = {zh:"zh-CN", "zh-Hant":"zh-Hant", en:"en", ja:"ja"};
-let language = "zh";
-try {
-  const savedLanguage = localStorage.getItem(KEY+"-language");
-  if (languages.includes(savedLanguage)) language = savedLanguage;
-} catch {}
-
-function tr(source, fields = {}) {
-  const words = translations[source];
-  const template = language === "zh" || !words ? source : (words[translationIndex[language]] ?? source);
-  return template.replace(/\{(\w+)\}/g, (_, name) => fields[name]);
-}
+const language="zh",locale={zh:"zh-CN"};
+function tr(source, fields={}){return source.replace(/\{(\w+)\}/g,(_,key)=>fields[key]);}
 function settingName(label) {
   const match = /^第 (\d+) 艘$/.exec(label);
   return match ? tr("第 {n} 艘",{n:match[1]}) : tr(label);
 }
-Object.assign(translations,{
-  "海域预设": [
-    "Zone preset",
-    "海域プリセット",
-    "海域預設"
-  ],
-  "第 {n} 关": [
-    "Zone {n}",
-    "海域 {n}",
-    "第 {n} 關"
-  ],
-  "第 11 关起": [
-    "Zone 11+",
-    "海域 11 以降",
-    "第 11 關起"
-  ],
-  "自定义": [
-    "Custom",
-    "カスタム",
-    "自訂"
-  ],
-  "显示百分比": [
-    "Percentages",
-    "確率を表示",
-    "顯示百分比"
-  ],
-  "已切换到{stage}。可撤销以恢复上一局。": [
-    "Switched to {stage}. Undo to restore the previous board.",
-    "{stage}に切り替えました。「元に戻す」で直前の盤面に戻せます。",
-    "已切換到{stage}。可復原以回到上一局。"
-  ],
-  "可在「海域与舰队」调整当前配置。": [
-    "Edit the current setup under Sea & fleet.",
-    "「海域と艦隊」で現在の設定を変更できます。",
-    "可在「海域與艦隊」調整目前的設定。"
-  ],
-  "{n} 格长": [
-    "{n} cells",
-    "{n} マス",
-    "{n} 格長"
-  ]
-});
-const fixedLabels = [];
-for (const element of document.querySelectorAll("header *, main *")) {
-  for (const node of element.childNodes) {
-    if (node.nodeType === Node.TEXT_NODE && Object.hasOwn(translations,node.textContent.trim())) {
-      const source = node.textContent.trim();
-      fixedLabels.push(() => {node.textContent = tr(source);});
-    }
-  }
-  for (const attr of ["title","aria-label"]) {
-    const source = element.getAttribute(attr);
-    if (source && Object.hasOwn(translations,source)) {
-      fixedLabels.push(() => {element.setAttribute(attr,tr(source));});
-    }
-  }
-}
 let lastNotice, lastNoticeWasError = false;
 let saveStatus = "修改后将在此浏览器自动保存";
-function renderLanguage() {
-  document.documentElement.lang = locale[language];
-  document.title = tr("海岛奇兵·声呐鱼雷命中率助手");
-  for (const apply of fixedLabels) apply();
-  const menu = $("languageToggle");
-  menu.value = language;
-  menu.title = tr("选择语言");
-  menu.setAttribute("aria-label",menu.title);
-  window.renderSonarGuide?.(language);
-  document.dispatchEvent(new CustomEvent("sonar-language",{detail:language}));
-}
-function setLanguage(next) {
-  if (!languages.includes(next) || language === next) return;
-  language = next;
-  try {localStorage.setItem(KEY+"-language",language);} catch {}
-  renderLanguage();
-  renderSettings();
-  showMessage(lastNotice,lastNoticeWasError);
-  renderBoard();
-  $("save").textContent = tr(saveWarning || saveStatus);
-}
-
-
 function geometry({sunk, rows, cols}) {
   const hulls = new Set(sunk.flatMap(boat => boat.cells));
   const ring = new Set();
@@ -1653,7 +634,7 @@ function validate(data) {
       !data.lengths.every(length => integer(length,1,Math.max(data.rows,data.cols))) ||
       !data.marks || typeof data.marks !== "object" || Array.isArray(data.marks) ||
       !Array.isArray(data.sunk) || data.sunk.length > data.lengths.length) bad("海域或舰队设置无效。");
-  if (data.lengths.includes(1)) bad("舰队中有单格潜艇。请在旧版将长度改为至少 2 格，再导出进度。");
+  if (data.lengths.includes(1)) bad("舰队中有单格潜艇。请在旧版将长度改为至少 2 格。");
   const {rows, cols} = data;
   const marks = {}, sunk = [], remaining = data.lengths.slice(), blocked = new Set();
   for (const [key,value] of Object.entries(data.marks)) {
@@ -1692,8 +673,8 @@ try {
   const saved = localStorage.getItem(KEY) ?? localStorage.getItem(LEGACY_KEY);
   if (saved) state = validate(JSON.parse(saved).state);
 } catch (error) {
-  saveWarning = error.message === "舰队中有单格潜艇。请在旧版将长度改为至少 2 格，再导出进度。"
-    ? "旧进度含单格潜艇。请在旧版修正后重新导入。" : "无法读取上次的自动保存。可使用导入恢复。";
+  saveWarning = error.message === "舰队中有单格潜艇。请在旧版将长度改为至少 2 格。"
+    ? "旧进度含单格潜艇。无法载入。" : "无法读取上次的自动保存。";
 }
 let previous = [], future = [], mode = "water", draft = null, answer = null;
 let worker = null, timer, revision = 0;
@@ -1711,7 +692,7 @@ function save() {
     localStorage.setItem(KEY,JSON.stringify({version:1,state}));
     saveWarning = "";
   } catch {
-    saveWarning = "浏览器未能自动保存，请用导出备份。";
+    saveWarning = "浏览器未能自动保存。";
   }
   saveStatus = "已自动保存到此浏览器";
   $("save").textContent = tr(saveWarning || saveStatus);
@@ -1835,7 +816,7 @@ function edit(editState) {
 }
 
 function stageName(stage) {
-  return stage === 11 ? tr("第 11 关起") : tr("第 {n} 关",{n:stage});
+  return stage === 11 ? tr("11~99号海域") : tr("{n}号海域",{n:stage});
 }
 function renderStageSelector() {
   const select = $("stage-select");
@@ -2202,32 +1183,6 @@ document.addEventListener("keydown",event => {
     else travel(previous,future);
   }
 });
-$("export").onclick = () => {
-  const file = new Blob([JSON.stringify({version:1,state},null,2)],{type:"application/json"});
-  const url = URL.createObjectURL(file);
-  const link = Object.assign(document.createElement("a"),{href:url,download:{zh:"声呐探索进度-F3.3.json","zh-Hant":"聲納探索進度-F3.3.json",en:"sonar-progress-F3.3.json",ja:"ソナー探索記録-F3.3.json"}[language]});
-  document.body.append(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(url),2000);
-};
-$("import").onclick = () => $("file").click();
-$("file").onchange = async event => {
-  const input = event.target;
-  const [file] = input.files;
-  input.value = "";
-  if (!file) return;
-  try {
-    if (file.size > 100000) throw new Error("文件过大，请选择本工具导出的进度文件。");
-    let data;
-    try {data=JSON.parse(await file.text());}
-    catch {throw new Error("文件无法读取或不是有效的 JSON。");}
-    if (data?.version !== 1 || !data.state) throw new Error("请选择本工具导出的进度文件。");
-    const imported = validate(data.state);
-    showMessage(commit(imported) ? "已导入探索进度。可撤销此次导入。" : "该进度与当前棋盘相同。");
-  } catch (error) {showMessage(error.message,true);}
-};
-
 // Keep controls out of the transformed board, inside the sea scene.
 const seaControls=document.createElement('div');seaControls.className='sea-controls';
 for(const b of $('modes').querySelectorAll('[data-mode]'))seaControls.append(b);
@@ -2239,7 +1194,7 @@ sinkGroup.className='sink-actions';
 sinkGroup.append($('preview-actions'),seaControls.querySelector('[data-mode="sunk"]'));
 seaControls.append(sinkGroup);
 const scene=$('scene'), pointers=new Map();let boardZoom=1,pinch=null,suppressClickUntil=0;
-function zoomBoard(value){boardZoom=Math.max(.55,Math.min(1.65,value));$('board').style.setProperty('--board-zoom',boardZoom);}
+function zoomBoard(value){boardZoom=Math.max(.95,Math.min(1.9,value));$('board').style.setProperty('--board-zoom',boardZoom);}
 scene.addEventListener('wheel',e=>{if(e.target.closest('.sea-controls'))return;e.preventDefault();zoomBoard(boardZoom*Math.exp(-e.deltaY*.0015));},{passive:false});
 let panX=0, panY=0, anchor=null, moved=false;
 function point(e){return {x:e.clientX,y:e.clientY};}
@@ -2280,8 +1235,6 @@ scene.addEventListener('click',e=>{
     e.preventDefault();e.stopImmediatePropagation();
   }
 },true);
-renderLanguage();
-$("languageToggle").addEventListener("change", event => setLanguage(event.target.value));
 renderSettings();
 setView(view);
 showMessage();
@@ -2466,215 +1419,5 @@ window.SONAR_SERVICES = {
   formspreeId: "mqpqqned"
 };
 
-</script><script src="./settings.js"></script><script>(() => {
-  "use strict";
-  const words = {
-    guestbook:["留言板","留言板","Guestbook","掲示板"],
-    publicHint:["发表后，所有访问者都能看到你的昵称和留言。","發表後，所有訪客都能看到你的暱稱和留言。","Your nickname and message will be visible to everyone.","投稿すると、ニックネームとメッセージが全員に公開されます。"],
-    recent:["最新留言","最新留言","Recent messages","新着メッセージ"],
-    refresh:["刷新","重新整理","Refresh","更新"],
-    older:["查看更多","顯示更多","Show older messages","以前の投稿を表示"],
-    nickname:["昵称","暱稱","Nickname","ニックネーム"],
-    message:["留言","留言","Message","メッセージ"],
-    publish:["发表留言","發表留言","Post message","投稿する"],
-    contact:["联系我","聯絡我","Contact","お問い合わせ"],
-    contactHeading:["联系家恩宝贝","聯絡家恩宝贝","Contact 家恩宝贝","家恩宝贝 に連絡"],
-    back:["← 返回棋盘","← 返回棋盤","← Back to board","← 盤面に戻る"],
-    privateHint:["建议会私下发给 家恩宝贝。如果希望收到回复，请留下联系方式。","建議會私下寄給 家恩宝贝。如果希望收到回覆，請留下聯絡方式。","Your feedback goes privately to 家恩宝贝. Leave contact details if you would like a reply.","ご意見は 家恩宝贝 に直接届きます。返信をご希望の場合は連絡先をご記入ください。"],
-    suggestion:["建议内容","建議內容","Your feedback","ご意見・ご要望"],
-    sender:["你的称呼（选填）","你的稱呼（選填）","Your name (optional)","お名前（任意）"],
-    reply:["联系方式（选填）","聯絡方式（選填）","Contact details (optional)","連絡先（任意）"],
-    send:["发送建议","送出建議","Send feedback","送信する"],
-    language:["语言","語言","Language","言語"],
-    offlineBoard:["留言板尚未开放。","留言板尚未開放。","The guestbook is not open yet.","掲示板は現在準備中です。"],
-    offlineMail:["建议收件服务尚未开通。","建議收件服務尚未開通。","The feedback inbox is not open yet.","お問い合わせの受付は現在準備中です。"],
-    loading:["正在读取留言…","正在讀取留言…","Loading messages…","投稿を読み込み中…"],
-    empty:["还没有留言。","目前還沒有留言。","No messages yet.","まだ投稿がありません。"],
-    loadError:["读取失败，请点「刷新」重试。","讀取失敗，請點「重新整理」再試一次。","Couldn’t load messages. Select Refresh to try again.","読み込めませんでした。「更新」を押して再度お試しください。"],
-    sending:["正在发送…","正在傳送…","Sending…","送信中…"],
-    published:["留言已公开发表。","留言已公開發表。","Your message is now public.","メッセージを公開しました。"],
-    sent:["建议已提交，谢谢你的反馈。","建議已送出，謝謝你的回饋。","Feedback submitted. Thank you.","ご意見を受け付けました。ありがとうございます。"],
-    limit:["操作过于频繁，请稍后再试。","操作過於頻繁，請稍後再試。","Too many requests. Please try later.","しばらく待ってから再度お試しください。"],
-    sendError:["未能确认提交结果，请检查网络后重试。","無法確認送出結果，請檢查網路後再試一次。","We couldn’t confirm submission. Check your connection and try again.","送信結果を確認できませんでした。接続を確認して再度お試しください。"],
-    invalid:["昵称需为 1～24 个字符，留言需为 1～500 个字符。","暱稱須為 1～24 個字元，留言須為 1～500 個字元。","Use 1–24 characters for your nickname and 1–500 for your message.","ニックネームは1〜24文字、メッセージは1〜500文字で入力してください。"],
-    required:["请填写建议内容。","請填寫建議內容。","Please enter your feedback.","ご意見をご記入ください。"],
-    forbidden:["当前网址尚未获准发表留言，请从正式站点打开。","目前網址尚未獲准發表留言，請從正式網站開啟。","Posting is unavailable from this address. Open the published site to post.","このURLからは投稿できません。公開サイトからご利用ください。"]
-  };
-  const languages = ["zh","zh-Hant","en","ja"];
-  const preference = "boom-beach-sonar-f2-language";
-  const normalize = lang => lang === "zh-CN" ? "zh" : languages.includes(lang) ? lang : "zh";
-  const byId = id => document.getElementById(id);
-  const config = window.SONAR_SERVICES || {};
-  let current = normalize(document.documentElement.lang);
-  const word = key => words[key][languages.indexOf(current)];
-  const notices = new Map();
-  function notice(id, key, error = false) {
-    notices.set(id,key);
-    const element = byId(id);
-    element.textContent = key ? word(key) : "";
-    element.dataset.error = String(error);
-  }
-  function translate() {
-    document.querySelectorAll("[data-word]").forEach(node => {node.textContent = word(node.dataset.word);});
-    for (const [id,key] of notices) byId(id).textContent = key ? word(key) : "";
-    document.querySelectorAll("time[datetime]").forEach(node => {
-      const date = new Date(node.dateTime);
-      node.textContent = new Intl.DateTimeFormat(document.documentElement.lang,{dateStyle:"medium",timeStyle:"short"}).format(date);
-    });
-    if (byId("contact-link")) byId("contact-link").href = "./contact.html?lang="+current;
-  }
-  function getGuestbookUrl() {
-    if (!config.guestbookUrl) return null;
-    try {
-      const url = new URL(config.guestbookUrl);
-      const local = ["127.0.0.1","localhost","[::1]"].includes(url.hostname);
-      if (url.protocol === "https:" || (local && url.protocol === "http:")) return url;
-    } catch {}
-    return null;
-  }
-  async function request(url, options = {}) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(),18000);
-    try {
-      const response = await fetch(url,{...options,signal:controller.signal,credentials:"omit",cache:"no-store"});
-      if (!response.ok) {
-        const error = new Error("Request failed");
-        error.status = response.status;
-        throw error;
-      }
-      return await response.json();
-    } finally {clearTimeout(timeout);}
-  }
-  function startGuestbook() {
-    const url = getGuestbookUrl();
-    const form = byId("guest-form"), list = byId("public-messages");
-    const refresh = byId("refresh-messages"), older = byId("older-messages"), publish = byId("publish-message");
-    let cursor = null, busy = false, submission = null;
-    function lock(value) {
-      busy = value;
-      refresh.disabled = older.disabled = publish.disabled = value || !url;
-    }
-    function drawItem(item) {
-      if (!Number.isSafeInteger(item?.id) || typeof item.nickname !== "string" || typeof item.message !== "string" ||
-          !Number.isFinite(Date.parse(item.createdAt))) throw new Error("Invalid message");
-      const li = document.createElement("li"), meta = document.createElement("div");
-      li.dataset.messageId = item.id; meta.className = "message-meta";
-      const name = document.createElement("strong"), date = document.createElement("time"), body = document.createElement("p");
-      name.textContent = item.nickname; date.dateTime = item.createdAt; body.textContent = item.message;
-      meta.append(name,date); li.append(meta,body); return li;
-    }
-    async function load(append) {
-      if (busy || !url) return;
-      lock(true); notice("feed-state","loading");
-      try {
-        const target = new URL(url);
-        if (append && cursor) target.searchParams.set("before",String(cursor));
-        const data = await request(target);
-        if (!Array.isArray(data.messages)) throw new Error("Invalid response");
-        const entries = data.messages.map(drawItem);
-        if (!append) list.replaceChildren();
-        for (const li of entries) if (!list.querySelector('[data-message-id="'+li.dataset.messageId+'"]')) list.append(li);
-        cursor = data.nextCursor; older.hidden = !cursor;
-        notice("feed-state",list.childElementCount ? "" : "empty");
-        translate();
-      } catch {notice("feed-state","loadError",true);}
-      finally {lock(false);}
-    }
-    refresh.onclick = () => load(false); older.onclick = () => load(true);
-    form.onsubmit = async event => {
-      event.preventDefault();
-      if (!url || busy) return;
-      const nickname = byId("guest-name").value.trim(), message = byId("guest-text").value.trim();
-      if (!nickname || [...nickname].length>24 || !message || [...message].length>500) {notice("post-state","invalid",true);return;}
-      if (submission?.nickname !== nickname || submission?.message !== message) {
-        submission = {nickname,message,submissionId:crypto.randomUUID()};
-      }
-      lock(true); notice("post-state","sending");
-      try {
-        const data = await request(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(submission)});
-        const entry = drawItem(data.message);
-        if (!list.querySelector('[data-message-id="'+entry.dataset.messageId+'"]')) list.prepend(entry);
-        if (byId("guest-text").value.trim() === message) byId("guest-text").value = "";
-        submission = null;
-        notice("post-state","published"); notice("feed-state",""); translate();
-      } catch (error) {
-        const reason = ({400:"invalid",403:"forbidden",429:"limit"})[error.status] || "sendError";
-        notice("post-state",reason,true);
-      } finally {lock(false);}
-    };
-    if (url) load(false);
-    else {lock(false);notice("feed-state","offlineBoard");}
-  }
-  function startContact() {
-    const select = byId("contact-language");
-    let saved = "zh"; try {saved = localStorage.getItem(preference);} catch {}
-    function choose(value) {
-      current = normalize(value);
-      document.documentElement.lang = current === "zh" ? "zh-CN" : current;
-      select.value = current;
-      select.setAttribute("aria-label",word("language"));
-      document.title = word("contactHeading");
-      byId("back-board").href = "./index.html?lang="+current;
-      translate();
-    }
-    choose(new URLSearchParams(location.search).get("lang") || saved);
-    select.onchange = () => {
-      choose(select.value);
-      try {localStorage.setItem(preference,current);} catch {}
-      try {history.replaceState(null,"","?lang="+current);} catch {}
-    };
-    const form = byId("contact-form"), button = byId("send-feedback");
-    const id = String(config.formspreeId || "").trim();
-    if (!/^[a-zA-Z0-9_-]{5,64}$/.test(id)) {button.disabled=true;notice("contact-state","offlineMail");}
-    form.onsubmit = async event => {
-      event.preventDefault();
-      if (button.disabled) return;
-      const payload = new FormData(form);
-      const message = String(payload.get("message")).trim();
-      if (!message) {notice("contact-state","required",true);return;}
-      payload.set("message",message);
-      button.disabled = true; notice("contact-state","sending");
-      try {
-        const data = await request("https://formspree.io/f/"+id,{method:"POST",headers:{Accept:"application/json"},body:payload});
-        if (!data || data.ok === false || data.errors?.length) throw new Error("Submission rejected");
-        if (byId("suggestion").value.trim() === message) byId("suggestion").value="";
-        notice("contact-state","sent");
-      } catch(error) {notice("contact-state",error.status===429?"limit":"sendError",true);}
-      finally {button.disabled=false;}
-    };
-  }
-  if (byId("guest-form")) {
-    document.addEventListener("sonar-language",event => {current=normalize(event.detail);translate();});
-    const selection = new URLSearchParams(location.search).get("lang");
-    const select = byId("languageToggle");
-    if (languages.includes(selection) && select && selection !== current) {
-      select.value = selection;
-      select.dispatchEvent(new Event("change",{bubbles:true}));
-    }
-    if (selection) try {
-      const clean = new URL(location.href);
-      clean.searchParams.delete("lang");
-      history.replaceState(null,"",clean);
-    } catch {}
-    current = normalize(document.documentElement.lang);
-    translate(); startGuestbook();
-  } else if (byId("contact-form")) startContact();
-})();
-</script><script>
-if (location.protocol === "file:") {
-  document.getElementById("contact-link").addEventListener("click",event => {
-    event.preventDefault();
-    const back = new URL(location.href);
-    back.searchParams.set("lang",document.getElementById("languageToggle").value);
-    const setup = '<script>window.SONAR_SERVICES='+JSON.stringify(window.SONAR_SERVICES)+';<\/script>';
-    const returnLink = '<script>document.getElementById("back-board").href='+JSON.stringify(back.href)+';<\/script>';
-    let html = "<!doctype html>\n<html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>联系家恩宝贝</title><style>.help-tools{flex-wrap:wrap}\n@media(min-width:761px){main{align-items:stretch}}\n.help-tools .contact-link,.contact-back{display:inline-flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid #67978a;background:#194e43;color:#fff;text-decoration:none;font:650 13px/1.5 inherit;padding:5px 11px;min-height:34px}\n.help-tools .contact-link{font-size:13px;font-weight:650}\n.help-tools .contact-link:hover,.contact-back:hover{background:#276355}\n.community-wrap{max-width:1160px;margin:0 auto;padding:0 clamp(12px,3vw,32px) 30px}\n.community-card{padding:clamp(16px,2vw,24px)}\n.community-intro{margin-bottom:18px}\n.community-intro h2{font-size:20px;line-height:1.3}\n.community-intro p,.community-note{color:#476762;font-size:13px}\n.community-intro p{margin:4px 0 0}\n.community-columns{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:clamp(18px,4vw,50px)}\n.feed-tools,.form-actions{display:flex;align-items:center;justify-content:space-between;gap:10px}\n.feed-tools h3{font-size:15px;margin:0}\n.feed-tools button,#older-messages{font-size:13px;padding:4px 10px}\n#public-messages{list-style:none;padding:0;margin:8px 0}\n#public-messages li{border-top:1px solid #d8e4de;padding:10px 0}\n.message-meta{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 12px;font-size:14px;overflow-wrap:anywhere}\n.message-meta time{font-size:12px;color:#57716a}\n#public-messages p{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;margin:3px 0 0}\n.community-form{display:grid;align-content:start;gap:6px;min-width:0}\n.community-form label{font-size:14px;font-weight:650}\n.community-form :is(input,textarea){display:block;width:100%;min-width:0;box-sizing:border-box;border:1px solid #a6c3b7;border-radius:8px;background:white;color:#143b35;font:inherit;line-height:1.5;padding:8px 10px;margin:0 0 4px}\n.community-form textarea{resize:vertical;min-height:72px}\n.community-form :is(input,textarea):focus-visible,.contact-link:focus-visible{outline:3px solid #167e78;outline-offset:2px}\n.community-form button[type=submit]{background:#126351;color:white;border-color:#126351;padding:8px 16px}\n.community-form button[type=submit]:hover:enabled{background:#0c5143}\n.community-note{margin:4px 0}\n.community-note:empty{display:none}\n.community-note[data-error=\"true\"]{color:#992e28}\n.contact-body{margin:0;color:#143b35;background:#eff5f0;font:15px/1.5 \"PingFang SC\",\"Microsoft YaHei\",system-ui,sans-serif}\n.contact-body *{box-sizing:border-box}\n.contact-mast{background:#103e36;color:#fff}\n.contact-bar{max-width:760px;margin:auto;padding:14px clamp(14px,3vw,28px);display:flex;align-items:center;justify-content:space-between;gap:10px}\n.contact-bar select{font:inherit;font-size:14px;padding:6px 9px;color:#fff;background:#194e43;border:1px solid #67978a;border-radius:8px}\n.contact-main{max-width:760px;margin:24px auto;padding:0 clamp(14px,3vw,28px)}\n.contact-card{background:#fff;border:1px solid #c9dbd4;border-radius:15px;padding:clamp(18px,4vw,32px)}\n.contact-card h1{font-size:clamp(23px,4vw,30px);margin:0 0 5px;line-height:1.3}\n.contact-card .community-intro{margin-bottom:20px}\n.contact-card button{font:650 15px/1.5 system-ui,sans-serif;cursor:pointer;border:1px solid;border-radius:8px}\n.contact-card button:disabled{opacity:.48;cursor:default}\n@media(max-width:680px){.community-columns{grid-template-columns:minmax(0,1fr)}.community-form{border-top:1px solid #d8e4de;padding-top:14px}.contact-card .community-form{border:0;padding-top:0}}\n</style>\n</head>\n<body class=\"contact-body\">\n<header class=\"contact-mast\"><div class=\"contact-bar\">\n  <a class=\"contact-back\" href=\"./index.html\" id=\"back-board\" data-word=\"back\">← 返回棋盘</a>\n  <select id=\"contact-language\" aria-label=\"语言\"><option value=\"zh\">简体中文</option><option value=\"zh-Hant\">繁體中文</option><option value=\"en\">English</option><option value=\"ja\">日本語</option></select>\n</div></header>\n<main class=\"contact-main\"><section class=\"contact-card\">\n  <div class=\"community-intro\"><h1 data-word=\"contactHeading\">联系家恩宝贝</h1>\n  <p data-word=\"privateHint\">建议会私下发给 家恩宝贝。如果希望收到回复，请留下联系方式。</p></div>\n  <form class=\"community-form\" id=\"contact-form\">\n    <label for=\"suggestion\" data-word=\"suggestion\">建议内容</label>\n    <textarea id=\"suggestion\" name=\"message\" rows=\"6\" maxlength=\"5000\" required></textarea>\n    <label for=\"sender\" data-word=\"sender\">你的称呼（选填）</label><input id=\"sender\" name=\"name\" autocomplete=\"nickname\" maxlength=\"80\">\n    <label for=\"reply\" data-word=\"reply\">联系方式（选填）</label><input id=\"reply\" name=\"contact\" maxlength=\"200\">\n    <div class=\"form-actions\"><button type=\"submit\" id=\"send-feedback\" data-word=\"send\">发送建议</button></div>\n    <p class=\"community-note\" id=\"contact-state\" role=\"status\"></p>\n  </form>\n</section></main><script>// 填好后随站点一起发布。这里只放公开的接口地址和表单编号。\nwindow.SONAR_SERVICES = {\n  // 例如 https://sonar-guestbook.YOUR-SUBDOMAIN.workers.dev/messages\n  guestbookUrl: \"https://sonar-guestbook-api.v77k4swjj9.workers.dev/messages\",\n  // Formspree 表单地址 https://formspree.io/f/xxxxxxxx 最后一段的编号\n  formspreeId: \"mqpqqned\"\n};\n\n<\/script><script>(() => {\n  \"use strict\";\n  const words = {\n    guestbook:[\"留言板\",\"留言板\",\"Guestbook\",\"掲示板\"],\n    publicHint:[\"发表后，所有访问者都能看到你的昵称和留言。\",\"發表後，所有訪客都能看到你的暱稱和留言。\",\"Your nickname and message will be visible to everyone.\",\"投稿すると、ニックネームとメッセージが全員に公開されます。\"],\n    recent:[\"最新留言\",\"最新留言\",\"Recent messages\",\"新着メッセージ\"],\n    refresh:[\"刷新\",\"重新整理\",\"Refresh\",\"更新\"],\n    older:[\"查看更多\",\"顯示更多\",\"Show older messages\",\"以前の投稿を表示\"],\n    nickname:[\"昵称\",\"暱稱\",\"Nickname\",\"ニックネーム\"],\n    message:[\"留言\",\"留言\",\"Message\",\"メッセージ\"],\n    publish:[\"发表留言\",\"發表留言\",\"Post message\",\"投稿する\"],\n    contact:[\"联系我\",\"聯絡我\",\"Contact\",\"お問い合わせ\"],\n    contactHeading:[\"联系家恩宝贝\",\"聯絡家恩宝贝\",\"Contact 家恩宝贝\",\"家恩宝贝 に連絡\"],\n    back:[\"← 返回棋盘\",\"← 返回棋盤\",\"← Back to board\",\"← 盤面に戻る\"],\n    privateHint:[\"建议会私下发给 家恩宝贝。如果希望收到回复，请留下联系方式。\",\"建議會私下寄給 家恩宝贝。如果希望收到回覆，請留下聯絡方式。\",\"Your feedback goes privately to 家恩宝贝. Leave contact details if you would like a reply.\",\"ご意見は 家恩宝贝 に直接届きます。返信をご希望の場合は連絡先をご記入ください。\"],\n    suggestion:[\"建议内容\",\"建議內容\",\"Your feedback\",\"ご意見・ご要望\"],\n    sender:[\"你的称呼（选填）\",\"你的稱呼（選填）\",\"Your name (optional)\",\"お名前（任意）\"],\n    reply:[\"联系方式（选填）\",\"聯絡方式（選填）\",\"Contact details (optional)\",\"連絡先（任意）\"],\n    send:[\"发送建议\",\"送出建議\",\"Send feedback\",\"送信する\"],\n    language:[\"语言\",\"語言\",\"Language\",\"言語\"],\n    offlineBoard:[\"留言板尚未开放。\",\"留言板尚未開放。\",\"The guestbook is not open yet.\",\"掲示板は現在準備中です。\"],\n    offlineMail:[\"建议收件服务尚未开通。\",\"建議收件服務尚未開通。\",\"The feedback inbox is not open yet.\",\"お問い合わせの受付は現在準備中です。\"],\n    loading:[\"正在读取留言…\",\"正在讀取留言…\",\"Loading messages…\",\"投稿を読み込み中…\"],\n    empty:[\"还没有留言。\",\"目前還沒有留言。\",\"No messages yet.\",\"まだ投稿がありません。\"],\n    loadError:[\"读取失败，请点「刷新」重试。\",\"讀取失敗，請點「重新整理」再試一次。\",\"Couldn’t load messages. Select Refresh to try again.\",\"読み込めませんでした。「更新」を押して再度お試しください。\"],\n    sending:[\"正在发送…\",\"正在傳送…\",\"Sending…\",\"送信中…\"],\n    published:[\"留言已公开发表。\",\"留言已公開發表。\",\"Your message is now public.\",\"メッセージを公開しました。\"],\n    sent:[\"建议已提交，谢谢你的反馈。\",\"建議已送出，謝謝你的回饋。\",\"Feedback submitted. Thank you.\",\"ご意見を受け付けました。ありがとうございます。\"],\n    limit:[\"操作过于频繁，请稍后再试。\",\"操作過於頻繁，請稍後再試。\",\"Too many requests. Please try later.\",\"しばらく待ってから再度お試しください。\"],\n    sendError:[\"未能确认提交结果，请检查网络后重试。\",\"無法確認送出結果，請檢查網路後再試一次。\",\"We couldn’t confirm submission. Check your connection and try again.\",\"送信結果を確認できませんでした。接続を確認して再度お試しください。\"],\n    invalid:[\"昵称需为 1～24 个字符，留言需为 1～500 个字符。\",\"暱稱須為 1～24 個字元，留言須為 1～500 個字元。\",\"Use 1–24 characters for your nickname and 1–500 for your message.\",\"ニックネームは1〜24文字、メッセージは1〜500文字で入力してください。\"],\n    required:[\"请填写建议内容。\",\"請填寫建議內容。\",\"Please enter your feedback.\",\"ご意見をご記入ください。\"],\n    forbidden:[\"当前网址尚未获准发表留言，请从正式站点打开。\",\"目前網址尚未獲准發表留言，請從正式網站開啟。\",\"Posting is unavailable from this address. Open the published site to post.\",\"このURLからは投稿できません。公開サイトからご利用ください。\"]\n  };\n  const languages = [\"zh\",\"zh-Hant\",\"en\",\"ja\"];\n  const preference = \"boom-beach-sonar-f2-language\";\n  const normalize = lang => lang === \"zh-CN\" ? \"zh\" : languages.includes(lang) ? lang : \"zh\";\n  const byId = id => document.getElementById(id);\n  const config = window.SONAR_SERVICES || {};\n  let current = normalize(document.documentElement.lang);\n  const word = key => words[key][languages.indexOf(current)];\n  const notices = new Map();\n  function notice(id, key, error = false) {\n    notices.set(id,key);\n    const element = byId(id);\n    element.textContent = key ? word(key) : \"\";\n    element.dataset.error = String(error);\n  }\n  function translate() {\n    document.querySelectorAll(\"[data-word]\").forEach(node => {node.textContent = word(node.dataset.word);});\n    for (const [id,key] of notices) byId(id).textContent = key ? word(key) : \"\";\n    document.querySelectorAll(\"time[datetime]\").forEach(node => {\n      const date = new Date(node.dateTime);\n      node.textContent = new Intl.DateTimeFormat(document.documentElement.lang,{dateStyle:\"medium\",timeStyle:\"short\"}).format(date);\n    });\n    if (byId(\"contact-link\")) byId(\"contact-link\").href = \"./contact.html?lang=\"+current;\n  }\n  function getGuestbookUrl() {\n    if (!config.guestbookUrl) return null;\n    try {\n      const url = new URL(config.guestbookUrl);\n      const local = [\"127.0.0.1\",\"localhost\",\"[::1]\"].includes(url.hostname);\n      if (url.protocol === \"https:\" || (local && url.protocol === \"http:\")) return url;\n    } catch {}\n    return null;\n  }\n  async function request(url, options = {}) {\n    const controller = new AbortController();\n    const timeout = setTimeout(() => controller.abort(),18000);\n    try {\n      const response = await fetch(url,{...options,signal:controller.signal,credentials:\"omit\",cache:\"no-store\"});\n      if (!response.ok) {\n        const error = new Error(\"Request failed\");\n        error.status = response.status;\n        throw error;\n      }\n      return await response.json();\n    } finally {clearTimeout(timeout);}\n  }\n  function startGuestbook() {\n    const url = getGuestbookUrl();\n    const form = byId(\"guest-form\"), list = byId(\"public-messages\");\n    const refresh = byId(\"refresh-messages\"), older = byId(\"older-messages\"), publish = byId(\"publish-message\");\n    let cursor = null, busy = false, submission = null;\n    function lock(value) {\n      busy = value;\n      refresh.disabled = older.disabled = publish.disabled = value || !url;\n    }\n    function drawItem(item) {\n      if (!Number.isSafeInteger(item?.id) || typeof item.nickname !== \"string\" || typeof item.message !== \"string\" ||\n          !Number.isFinite(Date.parse(item.createdAt))) throw new Error(\"Invalid message\");\n      const li = document.createElement(\"li\"), meta = document.createElement(\"div\");\n      li.dataset.messageId = item.id; meta.className = \"message-meta\";\n      const name = document.createElement(\"strong\"), date = document.createElement(\"time\"), body = document.createElement(\"p\");\n      name.textContent = item.nickname; date.dateTime = item.createdAt; body.textContent = item.message;\n      meta.append(name,date); li.append(meta,body); return li;\n    }\n    async function load(append) {\n      if (busy || !url) return;\n      lock(true); notice(\"feed-state\",\"loading\");\n      try {\n        const target = new URL(url);\n        if (append && cursor) target.searchParams.set(\"before\",String(cursor));\n        const data = await request(target);\n        if (!Array.isArray(data.messages)) throw new Error(\"Invalid response\");\n        const entries = data.messages.map(drawItem);\n        if (!append) list.replaceChildren();\n        for (const li of entries) if (!list.querySelector('[data-message-id=\"'+li.dataset.messageId+'\"]')) list.append(li);\n        cursor = data.nextCursor; older.hidden = !cursor;\n        notice(\"feed-state\",list.childElementCount ? \"\" : \"empty\");\n        translate();\n      } catch {notice(\"feed-state\",\"loadError\",true);}\n      finally {lock(false);}\n    }\n    refresh.onclick = () => load(false); older.onclick = () => load(true);\n    form.onsubmit = async event => {\n      event.preventDefault();\n      if (!url || busy) return;\n      const nickname = byId(\"guest-name\").value.trim(), message = byId(\"guest-text\").value.trim();\n      if (!nickname || [...nickname].length>24 || !message || [...message].length>500) {notice(\"post-state\",\"invalid\",true);return;}\n      if (submission?.nickname !== nickname || submission?.message !== message) {\n        submission = {nickname,message,submissionId:crypto.randomUUID()};\n      }\n      lock(true); notice(\"post-state\",\"sending\");\n      try {\n        const data = await request(url,{method:\"POST\",headers:{\"Content-Type\":\"application/json\"},body:JSON.stringify(submission)});\n        const entry = drawItem(data.message);\n        if (!list.querySelector('[data-message-id=\"'+entry.dataset.messageId+'\"]')) list.prepend(entry);\n        if (byId(\"guest-text\").value.trim() === message) byId(\"guest-text\").value = \"\";\n        submission = null;\n        notice(\"post-state\",\"published\"); notice(\"feed-state\",\"\"); translate();\n      } catch (error) {\n        const reason = ({400:\"invalid\",403:\"forbidden\",429:\"limit\"})[error.status] || \"sendError\";\n        notice(\"post-state\",reason,true);\n      } finally {lock(false);}\n    };\n    if (url) load(false);\n    else {lock(false);notice(\"feed-state\",\"offlineBoard\");}\n  }\n  function startContact() {\n    const select = byId(\"contact-language\");\n    let saved = \"zh\"; try {saved = localStorage.getItem(preference);} catch {}\n    function choose(value) {\n      current = normalize(value);\n      document.documentElement.lang = current === \"zh\" ? \"zh-CN\" : current;\n      select.value = current;\n      select.setAttribute(\"aria-label\",word(\"language\"));\n      document.title = word(\"contactHeading\");\n      byId(\"back-board\").href = \"./index.html?lang=\"+current;\n      translate();\n    }\n    choose(new URLSearchParams(location.search).get(\"lang\") || saved);\n    select.onchange = () => {\n      choose(select.value);\n      try {localStorage.setItem(preference,current);} catch {}\n      try {history.replaceState(null,\"\",\"?lang=\"+current);} catch {}\n    };\n    const form = byId(\"contact-form\"), button = byId(\"send-feedback\");\n    const id = String(config.formspreeId || \"\").trim();\n    if (!/^[a-zA-Z0-9_-]{5,64}$/.test(id)) {button.disabled=true;notice(\"contact-state\",\"offlineMail\");}\n    form.onsubmit = async event => {\n      event.preventDefault();\n      if (button.disabled) return;\n      const payload = new FormData(form);\n      const message = String(payload.get(\"message\")).trim();\n      if (!message) {notice(\"contact-state\",\"required\",true);return;}\n      payload.set(\"message\",message);\n      button.disabled = true; notice(\"contact-state\",\"sending\");\n      try {\n        const data = await request(\"https://formspree.io/f/\"+id,{method:\"POST\",headers:{Accept:\"application/json\"},body:payload});\n        if (!data || data.ok === false || data.errors?.length) throw new Error(\"Submission rejected\");\n        if (byId(\"suggestion\").value.trim() === message) byId(\"suggestion\").value=\"\";\n        notice(\"contact-state\",\"sent\");\n      } catch(error) {notice(\"contact-state\",error.status===429?\"limit\":\"sendError\",true);}\n      finally {button.disabled=false;}\n    };\n  }\n  if (byId(\"guest-form\")) {\n    document.addEventListener(\"sonar-language\",event => {current=normalize(event.detail);translate();});\n    const selection = new URLSearchParams(location.search).get(\"lang\");\n    const select = byId(\"languageToggle\");\n    if (languages.includes(selection) && select && selection !== current) {\n      select.value = selection;\n      select.dispatchEvent(new Event(\"change\",{bubbles:true}));\n    }\n    if (selection) try {\n      const clean = new URL(location.href);\n      clean.searchParams.delete(\"lang\");\n      history.replaceState(null,\"\",clean);\n    } catch {}\n    current = normalize(document.documentElement.lang);\n    translate(); startGuestbook();\n  } else if (byId(\"contact-form\")) startContact();\n})();\n<\/script></body></html>\n";
-    html = html.replace('<html lang="zh-CN">','<html lang="'+document.documentElement.lang+'">');
-    html = html.replace('<script>'+"// 填好后随站点一起发布。这里只放公开的接口地址和表单编号。\nwindow.SONAR_SERVICES = {\n  // 例如 https://sonar-guestbook.YOUR-SUBDOMAIN.workers.dev/messages\n  guestbookUrl: \"https://sonar-guestbook-api.v77k4swjj9.workers.dev/messages\",\n  // Formspree 表单地址 https://formspree.io/f/xxxxxxxx 最后一段的编号\n  formspreeId: \"mqpqqned\"\n};\n\n"+'<\/script>',setup);
-    html = html.replace('</body>',returnLink+'</body>');
-    location.href = URL.createObjectURL(new Blob([html],{type:"text/html"}));
-  });
-}
-</script>
-</body>
-</html>
+</script><script src="./settings.js"></script><script src="./community.js"></script>
+</body></html>

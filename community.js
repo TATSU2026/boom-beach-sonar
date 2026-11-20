@@ -1,44 +1,40 @@
 (() => {
   "use strict";
   const words = {
-    guestbook:["留言板","留言板","Guestbook","掲示板"],
-    publicHint:["发表后，所有访问者都能看到你的昵称和留言。","發表後，所有訪客都能看到你的暱稱和留言。","Your nickname and message will be visible to everyone.","投稿すると、ニックネームとメッセージが全員に公開されます。"],
-    recent:["最新留言","最新留言","Recent messages","新着メッセージ"],
-    refresh:["刷新","重新整理","Refresh","更新"],
-    older:["查看更多","顯示更多","Show older messages","以前の投稿を表示"],
-    nickname:["昵称","暱稱","Nickname","ニックネーム"],
-    message:["留言","留言","Message","メッセージ"],
-    publish:["发表留言","發表留言","Post message","投稿する"],
-    contact:["联系我","聯絡我","Contact","お問い合わせ"],
-    contactHeading:["联系家恩宝贝","聯絡家恩宝贝","Contact 家恩宝贝","家恩宝贝 に連絡"],
-    back:["← 返回棋盘","← 返回棋盤","← Back to board","← 盤面に戻る"],
-    privateHint:["建议会私下发给 家恩宝贝。如果希望收到回复，请留下联系方式。","建議會私下寄給 家恩宝贝。如果希望收到回覆，請留下聯絡方式。","Your feedback goes privately to 家恩宝贝. Leave contact details if you would like a reply.","ご意見は 家恩宝贝 に直接届きます。返信をご希望の場合は連絡先をご記入ください。"],
-    suggestion:["建议内容","建議內容","Your feedback","ご意見・ご要望"],
-    sender:["你的称呼（选填）","你的稱呼（選填）","Your name (optional)","お名前（任意）"],
-    reply:["联系方式（选填）","聯絡方式（選填）","Contact details (optional)","連絡先（任意）"],
-    send:["发送建议","送出建議","Send feedback","送信する"],
-    language:["语言","語言","Language","言語"],
-    offlineBoard:["留言板尚未开放。","留言板尚未開放。","The guestbook is not open yet.","掲示板は現在準備中です。"],
-    offlineMail:["建议收件服务尚未开通。","建議收件服務尚未開通。","The feedback inbox is not open yet.","お問い合わせの受付は現在準備中です。"],
-    loading:["正在读取留言…","正在讀取留言…","Loading messages…","投稿を読み込み中…"],
-    empty:["还没有留言。","目前還沒有留言。","No messages yet.","まだ投稿がありません。"],
-    loadError:["读取失败，请点「刷新」重试。","讀取失敗，請點「重新整理」再試一次。","Couldn’t load messages. Select Refresh to try again.","読み込めませんでした。「更新」を押して再度お試しください。"],
-    sending:["正在发送…","正在傳送…","Sending…","送信中…"],
-    published:["留言已公开发表。","留言已公開發表。","Your message is now public.","メッセージを公開しました。"],
-    sent:["建议已提交，谢谢你的反馈。","建議已送出，謝謝你的回饋。","Feedback submitted. Thank you.","ご意見を受け付けました。ありがとうございます。"],
-    limit:["操作过于频繁，请稍后再试。","操作過於頻繁，請稍後再試。","Too many requests. Please try later.","しばらく待ってから再度お試しください。"],
-    sendError:["未能确认提交结果，请检查网络后重试。","無法確認送出結果，請檢查網路後再試一次。","We couldn’t confirm submission. Check your connection and try again.","送信結果を確認できませんでした。接続を確認して再度お試しください。"],
-    invalid:["昵称需为 1～24 个字符，留言需为 1～500 个字符。","暱稱須為 1～24 個字元，留言須為 1～500 個字元。","Use 1–24 characters for your nickname and 1–500 for your message.","ニックネームは1〜24文字、メッセージは1〜500文字で入力してください。"],
-    required:["请填写建议内容。","請填寫建議內容。","Please enter your feedback.","ご意見をご記入ください。"],
-    forbidden:["当前网址尚未获准发表留言，请从正式站点打开。","目前網址尚未獲准發表留言，請從正式網站開啟。","Posting is unavailable from this address. Open the published site to post.","このURLからは投稿できません。公開サイトからご利用ください。"]
+    guestbook:["留言板"],
+    publicHint:["发表后，所有访问者都能看到你的昵称和留言。"],
+    recent:["最新留言"],
+    refresh:["刷新"],
+    older:["查看更多"],
+    nickname:["昵称"],
+    message:["留言"],
+    publish:["发表留言"],
+    contact:["联系我"],
+    contactHeading:["联系家恩宝贝"],
+    back:["← 返回棋盘"],
+    privateHint:["建议会私下发给 家恩宝贝。如果希望收到回复，请留下联系方式。"],
+    suggestion:["建议内容"],
+    sender:["你的称呼（选填）"],
+    reply:["联系方式（选填）"],
+    send:["发送建议"],
+    language:["语言"],
+    offlineBoard:["留言板尚未开放。"],
+    offlineMail:["建议收件服务尚未开通。"],
+    loading:["正在读取留言…"],
+    empty:["还没有留言。"],
+    loadError:["读取失败，请点「刷新」重试。"],
+    sending:["正在发送…"],
+    published:["留言已公开发表。"],
+    sent:["建议已提交，谢谢你的反馈。"],
+    limit:["操作过于频繁，请稍后再试。"],
+    sendError:["未能确认提交结果，请检查网络后重试。"],
+    invalid:["昵称需为 1～24 个字符，留言需为 1～500 个字符。"],
+    required:["请填写建议内容。"],
+    forbidden:["当前网址尚未获准发表留言，请从正式站点打开。"]
   };
-  const languages = ["zh","zh-Hant","en","ja"];
-  const preference = "boom-beach-sonar-f2-language";
-  const normalize = lang => lang === "zh-CN" ? "zh" : languages.includes(lang) ? lang : "zh";
   const byId = id => document.getElementById(id);
   const config = window.SONAR_SERVICES || {};
-  let current = normalize(document.documentElement.lang);
-  const word = key => words[key][languages.indexOf(current)];
+  const word = key => words[key][0];
   const notices = new Map();
   function notice(id, key, error = false) {
     notices.set(id,key);
@@ -53,7 +49,6 @@
       const date = new Date(node.dateTime);
       node.textContent = new Intl.DateTimeFormat(document.documentElement.lang,{dateStyle:"medium",timeStyle:"short"}).format(date);
     });
-    if (byId("contact-link")) byId("contact-link").href = "./contact.html?lang="+current;
   }
   function getGuestbookUrl() {
     if (!config.guestbookUrl) return null;
@@ -138,23 +133,7 @@
     else {lock(false);notice("feed-state","offlineBoard");}
   }
   function startContact() {
-    const select = byId("contact-language");
-    let saved = "zh"; try {saved = localStorage.getItem(preference);} catch {}
-    function choose(value) {
-      current = normalize(value);
-      document.documentElement.lang = current === "zh" ? "zh-CN" : current;
-      select.value = current;
-      select.setAttribute("aria-label",word("language"));
-      document.title = word("contactHeading");
-      byId("back-board").href = "./index.html?lang="+current;
-      translate();
-    }
-    choose(new URLSearchParams(location.search).get("lang") || saved);
-    select.onchange = () => {
-      choose(select.value);
-      try {localStorage.setItem(preference,current);} catch {}
-      try {history.replaceState(null,"","?lang="+current);} catch {}
-    };
+    translate();
     const form = byId("contact-form"), button = byId("send-feedback");
     const id = String(config.formspreeId || "").trim();
     if (!/^[a-zA-Z0-9_-]{5,64}$/.test(id)) {button.disabled=true;notice("contact-state","offlineMail");}
@@ -176,19 +155,6 @@
     };
   }
   if (byId("guest-form")) {
-    document.addEventListener("sonar-language",event => {current=normalize(event.detail);translate();});
-    const selection = new URLSearchParams(location.search).get("lang");
-    const select = byId("languageToggle");
-    if (languages.includes(selection) && select && selection !== current) {
-      select.value = selection;
-      select.dispatchEvent(new Event("change",{bubbles:true}));
-    }
-    if (selection) try {
-      const clean = new URL(location.href);
-      clean.searchParams.delete("lang");
-      history.replaceState(null,"",clean);
-    } catch {}
-    current = normalize(document.documentElement.lang);
     translate(); startGuestbook();
   } else if (byId("contact-form")) startContact();
 })();
