@@ -76,8 +76,8 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
 .sea .board{
   position:absolute;z-index:1;left:50%;top:42.2%;width:64.5%;aspect-ratio:1;
   gap:clamp(1.2px,.35cqw,3px);align-items:stretch;
-  grid-template-columns:repeat(calc(var(--cols) + 1),minmax(0,1fr));
-  grid-template-rows:repeat(calc(var(--cols) + 1),minmax(0,1fr));
+  grid-template-columns:repeat(calc(var(--cols) + 2),minmax(0,1fr));
+  grid-template-rows:repeat(calc(var(--cols) + 2),minmax(0,1fr));
   transform:translate(-50%,-50%) perspective(185cqw) rotateX(44deg) rotateZ(45deg);
 }
 .sea .board .cell{grid-template:minmax(0,1fr)/minmax(0,1fr)}
@@ -162,7 +162,7 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
 #guide-content .faq-entry{margin:0;font-size:14px}
 .faq-entry summary{padding:13px 1px;color:var(--ink)}
 .faq-entry p{padding-bottom:14px}
-#guide-credit{padding:9px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);background:#eff5f0}
+#guide-credit{font-size:13px;line-height:1.5;color:#e0f2ea;margin-inline-end:4px} @media(max-width:760px){#guide-credit{flex-basis:100%}}
 @media(max-width:560px){.mast-inner{padding-block:12px}.guide-heading{padding:12px 15px}#guide-content{padding-inline:15px}.help-tools button{min-height:36px}.topline .actions{gap:5px}.topline .history-actions button{padding:0 5px;min-height:32px}}
 
 
@@ -175,6 +175,30 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
 .preset-value{font-variant-numeric:tabular-nums;font-weight:650}
 .odds-control{margin-inline-start:auto;gap:5px;padding:5px 2px;font-size:13px;cursor:pointer;color:var(--muted)}
 .odds-control input{margin:0;width:16px;height:16px;accent-color:var(--accent)}
+
+/* F3.3: the ocean and controls stay fixed; only the board scales. */
+.sea .scene{min-width:0;aspect-ratio:1.12;touch-action:none}
+.sea .board{top:48%;width:61%;transform:translate(-50%,-50%) perspective(185cqw) rotateX(44deg) rotateZ(45deg) scale(var(--board-zoom,1));transform-origin:center;touch-action:none}
+.sea-controls{position:absolute;inset:0;z-index:5;pointer-events:none}
+.sea-controls button,.sea-controls .history-actions{pointer-events:auto}
+.sea-controls button{background:#0b4054ed;color:#f1fcff;border:1px solid #b5dce2aa;box-shadow:0 2px 6px #001b3580;min-height:38px;padding:7px 12px;font-size:14px;touch-action:manipulation}
+.sea-controls button[aria-pressed=true]{background:#f2d776;color:#173646;border-color:#fff0b2}
+.sea-controls [data-mode=water]{position:absolute;left:12px;top:12px}
+.sea-controls [data-mode=hit]{position:absolute;left:12px;bottom:12px}
+.sea-controls [data-mode=sunk]{position:absolute;right:12px;bottom:12px}
+.sea-history{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;align-items:center;gap:5px}
+.sea-history .history-actions{display:flex;gap:5px}
+.sea-history .history-button{width:38px;padding:5px}
+.sea .wreck{container-type:normal;overflow:visible}
+.wreck-svg{width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 2px 2px #022e3c99)}
+@media(max-width:450px){.sea-controls button{font-size:12px;padding:5px 9px;min-height:34px}.sea-history .history-button{width:34px}.sea .scene{aspect-ratio:1}}
+
+ .sink-actions{position:absolute;bottom:12px;right:12px;display:flex;align-items:flex-end;gap:5px}
+.sea-controls .sink-actions [data-mode=sunk]{position:static}
+.sink-actions .preview-actions{display:flex;flex-direction:column-reverse;align-items:flex-end;margin:0;gap:4px}
+.sink-actions [hidden]{display:none!important}
+.scene{user-select:none;-webkit-user-select:none}
+.scene.is-dragging,.scene.is-dragging .cell{cursor:grabbing}
 </style>
 <style>.help-tools{flex-wrap:wrap}
 @media(min-width:761px){main{align-items:stretch}}
@@ -224,6 +248,7 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
 <header class="mast"><div class="mast-inner">
   <h1>海岛奇兵·声呐鱼雷命中率助手</h1>
   <div class="help-tools">
+    <span id="guide-credit">F3.3 · 作者：家恩宝贝 · 助手：GPT-6.2 Astra</span>
     <button type="button" id="guide-open" aria-haspopup="dialog" aria-controls="guide-dialog">使用说明</button>
     <button type="button" id="faq-open" aria-haspopup="dialog" aria-controls="guide-dialog">常见问题</button>
     <a href="./contact.html" id="contact-link" class="contact-link" data-word="contact">联系我</a>
@@ -254,14 +279,13 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
         <select id="stage-select" aria-label="海域预设"></select>
         <button type="button" id="custom-stage" aria-pressed="false">自定义</button>
       </div></div><div class="actions">
-      <div class="view-toggle" aria-label="棋盘视角"><button id="view-sea" type="button" aria-pressed="true">斜视</button><button id="view-flat" type="button" aria-pressed="false">平视</button></div>
-      <button id="reset" type="button">清空标记</button><div class="history-actions"><button class="history-button" id="undo" type="button" aria-label="撤销" title="撤销（Ctrl+Z）" aria-keyshortcuts="Control+Z">↶</button><button class="history-button" id="redo" type="button" aria-label="恢复刚才撤销的操作" title="恢复刚才撤销的操作（Ctrl+Y）" aria-keyshortcuts="Control+Y">↷</button></div>
+      
+      <button id="reset" type="button">清空</button><div class="history-actions"><button class="history-button" id="undo" type="button" aria-label="撤销" title="撤销（Ctrl+Z）" aria-keyshortcuts="Control+Z">↶</button><button class="history-button" id="redo" type="button" aria-label="恢复刚才撤销的操作" title="恢复刚才撤销的操作（Ctrl+Y）" aria-keyshortcuts="Control+Y">↷</button></div>
     </div></div>
     <div class="modes" id="modes" aria-label="标记模式">
       <button type="button" data-mode="water" aria-pressed="true">空水</button>
-      <button type="button" data-mode="hit" aria-pressed="false">命中未沉</button>
+      <button type="button" data-mode="hit" aria-pressed="false">命中</button>
       <button type="button" data-mode="sunk" aria-pressed="false">击沉</button>
-      <button type="button" data-mode="unknown" aria-pressed="false">擦除</button>
       <label class="odds-control"><input type="checkbox" id="show-odds" checked>显示百分比</label>
     </div>
     <p class="note" id="message" role="status"></p>
@@ -303,7 +327,7 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
 <dialog id="guide-dialog" aria-labelledby="guide-title">
   <div class="guide-heading"><h2 id="guide-title"></h2><button type="button" id="guide-close" aria-label="关闭" autofocus>×</button></div>
   <div id="guide-content" tabindex="0"></div>
-  <div id="guide-credit"></div>
+
 </dialog>
 <script>(() => {
   const copy = {
@@ -311,7 +335,7 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
     "guide": "使用说明",
     "faq": "常见问题",
     "close": "关闭",
-    "credit": "F3.0 · 作者 TATSU",
+    "credit": "F3.3 · 作者：家恩宝贝 · 助手：GPT-6.2 Astra",
     "sections": [
       [
         "选择当前海域",
@@ -331,7 +355,7 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
           "鱼雷落在空格，选「空水」再点对应格。"
         ],
         [
-          "命中未沉",
+          "命中",
           "击中艇身、游戏仍未提示击沉时，逐格记录命中。"
         ],
         [
@@ -339,19 +363,18 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
           "游戏提示击沉后，依次点艇身的两个不同端点。两端要在同一行或同一列。核对高亮范围后点「确认击沉」。预览时可改点终点，「取消选取」可重选起点。"
         ],
         [
-          "擦除",
-          "点格子可清掉手动标记。用原模式再点一次同一格也能取消空水或命中。"
+          "取消标记", "在空水或命中模式下，再点一次相同标记即可取消，也可以使用撤销。"
         ]
       ],
       [
         "阅读棋盘和推荐",
         [
-          "斜视 / 平视",
-          "斜视用近大远小的海面棋盘对照游戏。平视按行列平铺，方便找坐标。例如 B3 是 B 列、第 3 行。"
+          "棋盘缩放",
+          "手机双指缩放、电脑滚轮缩放，仅改变棋盘大小。海域和操作按钮保持不变。例如 B3 是 B 列、第 3 行。"
         ],
         [
           "图例",
-          "未知格显示命中率，金框标出并列最高的格子。小屏斜视会把百分比取整，切到平视可查看更细的数值。棋盘较宽时可左右滑动。空水是手动记录的落空位置，「排除空水」是已击沉艇周围自动排除的格子。"
+          "未知格显示命中率，金框标出并列最高的格子。小屏斜视会把百分比取整，可缩放棋盘查看。空水是手动记录的落空位置，「排除空水」是已击沉艇周围自动排除的格子。"
         ],
         [
           "推荐探索",
@@ -373,7 +396,7 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
           "撤销上一步或恢复刚撤销的修改。也可按 Ctrl 或 ⌘ 加 Z 撤销，加 Shift 和 Z 恢复。Windows 上也可用 Ctrl+Y 恢复。"
         ],
         [
-          "清空标记",
+          "清空",
           "清除本局的手动标记和击沉记录，保留舰队设置。误点后可立即撤销。"
         ]
       ],
@@ -443,7 +466,7 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
     "guide": "Guide",
     "faq": "FAQ",
     "close": "Close",
-    "credit": "F3.0 · By TATSU",
+    "credit": "F3.3 · Author: 家恩宝贝 · Assistant: GPT-6.2 Astra",
     "sections": [
       [
         "Choose your sea zone",
@@ -471,15 +494,14 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
           "When the game reports a sinking, tap the two distinct ends of the hull in the same row or column. Check the highlighted cells and choose Confirm sinking. Tap another end to adjust the preview, or Cancel to choose a new starting point."
         ],
         [
-          "Erase",
-          "Tap a cell to remove its manual mark. Tapping a Water or Hit mark again in its own mode also clears it."
+          "Remove a mark", "Tap the same cell again in Water or Hit mode to remove its mark, or use Undo."
         ]
       ],
       [
         "Read the board",
         [
-          "Perspective / Top-down",
-          "Perspective lines up the near and far edges with the game view. Top-down makes coordinates easy to find. B3, for example, is column B, row 3."
+          "Board zoom",
+          "Pinch with two fingers on a phone, or use the mouse wheel on a computer. Only the board changes size; the sea and buttons stay fixed."
         ],
         [
           "Legend",
@@ -575,7 +597,7 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
     "guide": "使い方",
     "faq": "よくある質問",
     "close": "閉じる",
-    "credit": "F3.0 · 作者 TATSU",
+    "credit": "F3.3 · 作者：家恩宝贝 · アシスタント：GPT-6.2 Astra",
     "sections": [
       [
         "プレイ中の海域を選ぶ",
@@ -603,15 +625,14 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
           "ゲームで撃沈を確認したら、同じ行か列にある艦の両端を 1 マスずつ選びます。範囲を確認して「撃沈を確定」を押します。確定前は終点を選び直せます。「キャンセル」で始点から選び直せます。"
         ],
         [
-          "消去",
-          "手動で付けた印を消します。「空振り」「命中」のまま同じマスをもう一度タップしても消せます。"
+          "マークを取り消す", "同じモードでもう一度マスをタップすると印を消せます。「元に戻す」も使えます。"
         ]
       ],
       [
         "盤面とおすすめマスを読む",
         [
-          "斜め / 真上",
-          "ゲーム画面と見比べるときは、手前が大きく見える「斜め」が便利です。「真上」では行と列がそろいます。例えば B3 は B 列の 3 行目です。"
+          "盤面の拡大・縮小",
+          "スマートフォンは2本指、PCはマウスホイールで盤面だけ拡大・縮小できます。海面とボタンのサイズは変わりません。"
         ],
         [
           "凡例",
@@ -707,7 +728,7 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
     "guide": "使用說明",
     "faq": "常見問題",
     "close": "關閉",
-    "credit": "F3.0 · 作者 TATSU",
+    "credit": "F3.3 · 作者：家恩宝贝 · 助手：GPT-6.2 Astra",
     "sections": [
       [
         "選擇目前的海域",
@@ -727,7 +748,7 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
           "魚雷落空時，選「空水」再點對應的格子。"
         ],
         [
-          "命中未沉",
+          "命中",
           "魚雷擊中艇身、遊戲尚未顯示擊沉時，逐格記錄命中。"
         ],
         [
@@ -735,15 +756,14 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
           "遊戲顯示擊沉後，依序點選艇身的兩個不同端點。兩端須在同一列或同一欄。核對範圍後點「確認擊沉」。預覽時可改選終點，或點「取消選取」重新選擇起點。"
         ],
         [
-          "擦除",
-          "點格子即可清除手動標記。在原模式下再點一次同一格，也可取消空水或命中。"
+          "取消标记", "在空水或命中模式下，再点一次相同标记即可取消，也可以使用撤销。"
         ]
       ],
       [
         "閱讀棋盤與推薦",
         [
-          "斜視 / 平視",
-          "斜視的海面棋盤近大遠小，方便對照遊戲畫面。平視適合核對座標，例如 B3 是 B 欄、第 3 列。"
+          "棋盤縮放",
+          "手機雙指、電腦滑鼠滾輪可縮放棋盤，海域和按鈕大小保持不變。"
         ],
         [
           "圖例",
@@ -1139,7 +1159,7 @@ const translations = {
     "真上",
     "平視"
   ],
-  "清空标记": [
+  "清空": [
     "Clear marks",
     "マークをクリア",
     "清空標記"
@@ -1154,10 +1174,10 @@ const translations = {
     "空振り",
     "空水"
   ],
-  "命中未沉": [
+  "命中": [
     "Hit",
     "命中",
-    "命中未沉"
+    "命中"
   ],
   "击沉": [
     "Sunk",
@@ -1165,8 +1185,7 @@ const translations = {
     "擊沉"
   ],
   "擦除": [
-    "Erase",
-    "消去",
+    "Remove a mark", "Tap the same cell again in Water or Hit mode to remove its mark, or use Undo.",
     "擦除"
   ],
   "确认击沉": [
@@ -1680,19 +1699,7 @@ let previous = [], future = [], mode = "water", draft = null, answer = null;
 let worker = null, timer, revision = 0;
 let view = "sea";
 let surfacing = null;
-try {
-  if ((localStorage.getItem(KEY+"-view") ?? localStorage.getItem(LEGACY_KEY+"-view")) === "flat") view = "flat";
-} catch {}
-
-function setView(nextView) {
-  view = nextView;
-  $("board-scroll").classList.toggle("sea",view==="sea");
-  $("view-sea").setAttribute("aria-pressed",String(view==="sea"));
-  $("view-flat").setAttribute("aria-pressed",String(view==="flat"));
-}
-
-$("view-sea").onclick = () => changeView("sea");
-$("view-flat").onclick = () => changeView("flat");
+function setView() { view = "sea"; $("board-scroll").classList.add("sea"); }
 function changeView(nextView) {
   setView(nextView);
   try {localStorage.setItem(KEY+"-view",view);}
@@ -1713,7 +1720,8 @@ function save() {
 function showMessage(message, error = false) {
   lastNotice = message;
   lastNoticeWasError = error;
-  $("preview-actions").hidden = !draft;
+  $("preview-actions").hidden = mode !== "sunk";
+  $("cancel-sunk").hidden = !draft;
   $("confirm-sunk").disabled = !draft || draft.end === null || !!draft.error;
   const instruction = mode === "hit" ? "标记命中但未击沉的格子。若游戏已显示击沉，请用「击沉」标记整艘潜艇。"
     : mode !== "sunk" ? "选择标记类型后点击格子。再次点击同种标记可取消。"
@@ -1877,7 +1885,7 @@ function renderSettings() {
     }))
   );
   const sunkLengths = state.sunk.map(boat => boat.cells.length);
-  $("lengths").replaceChildren(...state.lengths.map((length,index) => {
+  $("lengths").replaceChildren(...state.lengths.map((length,index) => ({length,index})).sort((a,b)=>b.length-a.length || a.index-b.index).map(({length,index}) => {
     const match = sunkLengths.indexOf(length);
     if (match >= 0) sunkLengths.splice(match,1);
     const icon = document.createElement("span");
@@ -1939,6 +1947,22 @@ function percent(p) {
   return Number((p*100).toFixed(1))+"%";
 }
 
+
+function wreckArt(length,vertical,id){
+ const w=length*100,h=100,key='wreck-'+id;
+ let seams=''; for(let i=1;i<length;i++) seams+='<path d="M '+(i*100)+' 16 Q '+(i*100-17)+' 50 '+(i*100)+' 84" fill="none" stroke="#4f656e" stroke-width="3"/><path d="M '+(i*100+4)+' 17 Q '+(i*100-12)+' 50 '+(i*100+4)+' 83" fill="none" stroke="#eaf2f2" stroke-width="2"/>';
+ const body='<defs><linearGradient id="'+key+'" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#586f7a"/><stop offset=".23" stop-color="#d8e3e6"/><stop offset=".45" stop-color="#f4f7f7"/><stop offset=".7" stop-color="#abbec7"/><stop offset="1" stop-color="#435d6c"/></linearGradient></defs>'+
+ '<ellipse cx="'+w/2+'" cy="53" rx="'+(w/2-3)+'" ry="47" fill="none" stroke="#d6f8fc" stroke-opacity=".6" stroke-width="7" stroke-dasharray="3 5 8 3"/>'+
+ '<path d="M 24 50 Q 0 12 16 8 Q 35 4 34 43 Q 40 13 51 26 Q 58 43 28 54" fill="#405967" stroke="#a7bdc7" stroke-width="2"/>'+
+ '<rect x="25" y="15" width="'+(w-43)+'" height="70" rx="35" fill="url(#'+key+')" stroke="#3b535f" stroke-width="2"/>'+seams+
+ '<path d="M '+(w-37)+' 23 Q '+(w-6)+' 50 '+(w-37)+' 77" fill="none" stroke="#edf5f5" stroke-width="3"/>'+
+ '<path d="M '+(w*.44)+' 49 l 3 -27 q 22 -14 44 0 l 5 29 q -27 13 -52 -2" fill="#9eafb8" stroke="#4c626e" stroke-width="2"/>'+
+ '<ellipse cx="'+(w*.44+25)+'" cy="23" rx="21" ry="10" fill="#e1e9e9" stroke="#677d87" stroke-width="2"/>'+
+ '<rect x="'+(w*.44+17)+'" y="10" width="27" height="13" rx="5" fill="#de3028" stroke="#87251e" stroke-width="2"/><ellipse cx="'+(w*.44+44)+'" cy="16" rx="5" ry="6" fill="#ffe9d3"/>'+
+ '<path d="M '+(w-74)+' 63 l 5 -10 5 6 9 -2 -4 12 5 7 -13 -3 -6 5 z" fill="#233e4c"/>';
+ return '<svg class="wreck-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+(vertical?h:w)+' '+(vertical?w:h)+'" preserveAspectRatio="none"><g'+(vertical?' transform="rotate(90) scale(1 -1)"':'')+'>'+body+'</g></svg>';
+}
+
 function renderBoard() {
   const {rows,cols,marks,sunk,lengths} = state;
   const {hulls,ring} = geometry(state);
@@ -1955,6 +1979,7 @@ function renderBoard() {
   }
   axis("");
   for (let c=0;c<cols;c++) axis(letter(c));
+  axis("");
   for (let r=0;r<rows;r++) {
     axis(r+1);
     for (let c=0;c<cols;c++) {
@@ -1985,17 +2010,21 @@ function renderBoard() {
       cell.setAttribute("aria-label",description);
       cell.title = description;
       if (p !== null && best > 0) {
-        const strength = !showOdds && best > lowest ? (p-lowest)/(best-lowest) : Math.sqrt(p/best);
+        const strength = Math.sqrt(p/best);
         cell.style.setProperty("--tile",`hsl(99 42% ${94-30*strength}%)`);
         if (!showOdds) {
-          cell.style.setProperty("--tile",`hsl(165 36% ${94-46*strength}%)`);
-          cell.style.setProperty("--sea-tile",`hsl(180 40% ${84-55*strength}% / .78)`);
+          cell.style.setProperty("--tile","hsl(180 40% 65%)");
+          cell.style.setProperty("--sea-tile","hsl(190 40% 65% / .48)");
         } else cell.style.setProperty("--sea-tile",`hsl(${207-15*strength} ${21+15*strength}% ${48+10*strength}% / ${.17+.49*strength})`);
       }
       cell.onclick = () => markCell(i);
       fragments.append(cell);
     }
+    axis(String(r+1) + "'");
   }
+  axis("");
+  for (let c=0;c<cols;c++) axis(letter(c) + "'");
+  axis("");
   for (const {cells} of sunk) {
     const first = cells[0], last = cells.at(-1);
     const firstRow = Math.floor(first/cols), lastRow = Math.floor(last/cols);
@@ -2005,11 +2034,7 @@ function renderBoard() {
     wreck.setAttribute("aria-hidden","true");
     wreck.style.gridRow = `${firstRow+2} / ${lastRow+3}`;
     wreck.style.gridColumn = `${first%cols+2} / ${last%cols+3}`;
-    const hull = Object.assign(document.createElement("span"),{className:"hull"});
-    hull.append(Object.assign(document.createElement("span"),{className:"tail"}));
-    const ship = Object.assign(document.createElement("span"),{className:"ship"});
-    ship.append(hull);
-    wreck.append(ship);
+    wreck.innerHTML = wreckArt(cells.length,firstRow!==lastRow,first);
     fragments.append(wreck);
   }
   $("scene").style.setProperty("--cols",cols);
@@ -2139,7 +2164,7 @@ function schedule() {
 function setMode(nextMode) {
   mode = nextMode;
   draft = null;
-  for (const control of $("modes").querySelectorAll("button")) control.setAttribute("aria-pressed",String(control.dataset.mode===mode));
+  for (const control of document.querySelectorAll("[data-mode]")) control.setAttribute("aria-pressed",String(control.dataset.mode===mode));
   showMessage();
   renderBoard();
 }
@@ -2180,7 +2205,7 @@ document.addEventListener("keydown",event => {
 $("export").onclick = () => {
   const file = new Blob([JSON.stringify({version:1,state},null,2)],{type:"application/json"});
   const url = URL.createObjectURL(file);
-  const link = Object.assign(document.createElement("a"),{href:url,download:{zh:"声呐探索进度-F3.0.json","zh-Hant":"聲納探索進度-F3.0.json",en:"sonar-progress-F3.0.json",ja:"ソナー探索記録-F3.0.json"}[language]});
+  const link = Object.assign(document.createElement("a"),{href:url,download:{zh:"声呐探索进度-F3.3.json","zh-Hant":"聲納探索進度-F3.3.json",en:"sonar-progress-F3.3.json",ja:"ソナー探索記録-F3.3.json"}[language]});
   document.body.append(link);
   link.click();
   link.remove();
@@ -2202,6 +2227,59 @@ $("file").onchange = async event => {
     showMessage(commit(imported) ? "已导入探索进度。可撤销此次导入。" : "该进度与当前棋盘相同。");
   } catch (error) {showMessage(error.message,true);}
 };
+
+// Keep controls out of the transformed board, inside the sea scene.
+const seaControls=document.createElement('div');seaControls.className='sea-controls';
+for(const b of $('modes').querySelectorAll('[data-mode]'))seaControls.append(b);
+const seaHistory=document.createElement('div');seaHistory.className='sea-history';
+seaHistory.append($('reset'),$('undo').parentElement);seaControls.append(seaHistory);$('scene').append(seaControls);
+seaControls.addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(b)setMode(b.dataset.mode);});
+const sinkGroup=document.createElement('div');
+sinkGroup.className='sink-actions';
+sinkGroup.append($('preview-actions'),seaControls.querySelector('[data-mode="sunk"]'));
+seaControls.append(sinkGroup);
+const scene=$('scene'), pointers=new Map();let boardZoom=1,pinch=null,suppressClickUntil=0;
+function zoomBoard(value){boardZoom=Math.max(.55,Math.min(1.65,value));$('board').style.setProperty('--board-zoom',boardZoom);}
+scene.addEventListener('wheel',e=>{if(e.target.closest('.sea-controls'))return;e.preventDefault();zoomBoard(boardZoom*Math.exp(-e.deltaY*.0015));},{passive:false});
+let panX=0, panY=0, anchor=null, moved=false;
+function point(e){return {x:e.clientX,y:e.clientY};}
+function distance(){const [a,b]=pointers.values();return Math.hypot(a.x-b.x,a.y-b.y);}
+function pan(dx,dy){
+  const bounds=scene.getBoundingClientRect();
+  panX=Math.max(-bounds.width*.48,Math.min(bounds.width*.48,panX+dx));
+  panY=Math.max(-bounds.height*.48,Math.min(bounds.height*.48,panY+dy));
+  $('board').style.translate=panX+'px '+panY+'px';
+}
+scene.addEventListener('pointerdown',e=>{
+  if(e.button!==0||e.target.closest('.sea-controls'))return;
+  pointers.set(e.pointerId,point(e));
+  if(pointers.size===1){anchor=point(e);moved=false;suppressClickUntil=0;}
+  if(pointers.size===2){
+    pinch={distance:Math.max(1,distance()),zoom:boardZoom};moved=true;
+    for(const id of pointers.keys())scene.setPointerCapture(id);
+  }
+});
+window.addEventListener('pointermove',e=>{
+  if(!pointers.has(e.pointerId))return;
+  pointers.set(e.pointerId,point(e));
+  if(pointers.size>1){if(pinch)zoomBoard(pinch.zoom*distance()/pinch.distance);return;}
+  const dx=e.clientX-anchor.x,dy=e.clientY-anchor.y;
+  if(!moved&&Math.hypot(dx,dy)<6)return;
+  moved=true;scene.setPointerCapture(e.pointerId);scene.classList.add('is-dragging');
+  pan(dx,dy);anchor=point(e);
+});
+function endPointer(e){
+  if(!pointers.delete(e.pointerId))return;
+  if(pointers.size===1){anchor=[...pointers.values()][0];pinch=null;}
+  if(!pointers.size){pinch=null;scene.classList.remove('is-dragging');if(moved)suppressClickUntil=performance.now()+500;}
+}
+window.addEventListener('pointerup',endPointer);
+window.addEventListener('pointercancel',endPointer);
+scene.addEventListener('click',e=>{
+  if(performance.now()<suppressClickUntil&&!e.target.closest('.sea-controls')){
+    e.preventDefault();e.stopImmediatePropagation();
+  }
+},true);
 renderLanguage();
 $("languageToggle").addEventListener("change", event => setLanguage(event.target.value));
 renderSettings();
@@ -2400,9 +2478,9 @@ window.SONAR_SERVICES = {
     message:["留言","留言","Message","メッセージ"],
     publish:["发表留言","發表留言","Post message","投稿する"],
     contact:["联系我","聯絡我","Contact","お問い合わせ"],
-    contactHeading:["联系 TATSU","聯絡 TATSU","Contact TATSU","TATSU に連絡"],
+    contactHeading:["联系家恩宝贝","聯絡家恩宝贝","Contact 家恩宝贝","家恩宝贝 に連絡"],
     back:["← 返回棋盘","← 返回棋盤","← Back to board","← 盤面に戻る"],
-    privateHint:["建议会私下发给 TATSU。如果希望收到回复，请留下联系方式。","建議會私下寄給 TATSU。如果希望收到回覆，請留下聯絡方式。","Your feedback goes privately to TATSU. Leave contact details if you would like a reply.","ご意見は TATSU に直接届きます。返信をご希望の場合は連絡先をご記入ください。"],
+    privateHint:["建议会私下发给 家恩宝贝。如果希望收到回复，请留下联系方式。","建議會私下寄給 家恩宝贝。如果希望收到回覆，請留下聯絡方式。","Your feedback goes privately to 家恩宝贝. Leave contact details if you would like a reply.","ご意見は 家恩宝贝 に直接届きます。返信をご希望の場合は連絡先をご記入ください。"],
     suggestion:["建议内容","建議內容","Your feedback","ご意見・ご要望"],
     sender:["你的称呼（选填）","你的稱呼（選填）","Your name (optional)","お名前（任意）"],
     reply:["联系方式（选填）","聯絡方式（選填）","Contact details (optional)","連絡先（任意）"],
@@ -2590,7 +2668,7 @@ if (location.protocol === "file:") {
     back.searchParams.set("lang",document.getElementById("languageToggle").value);
     const setup = '<script>window.SONAR_SERVICES='+JSON.stringify(window.SONAR_SERVICES)+';<\/script>';
     const returnLink = '<script>document.getElementById("back-board").href='+JSON.stringify(back.href)+';<\/script>';
-    let html = "<!doctype html>\n<html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>联系 TATSU</title><style>.help-tools{flex-wrap:wrap}\n@media(min-width:761px){main{align-items:stretch}}\n.help-tools .contact-link,.contact-back{display:inline-flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid #67978a;background:#194e43;color:#fff;text-decoration:none;font:650 13px/1.5 inherit;padding:5px 11px;min-height:34px}\n.help-tools .contact-link{font-size:13px;font-weight:650}\n.help-tools .contact-link:hover,.contact-back:hover{background:#276355}\n.community-wrap{max-width:1160px;margin:0 auto;padding:0 clamp(12px,3vw,32px) 30px}\n.community-card{padding:clamp(16px,2vw,24px)}\n.community-intro{margin-bottom:18px}\n.community-intro h2{font-size:20px;line-height:1.3}\n.community-intro p,.community-note{color:#476762;font-size:13px}\n.community-intro p{margin:4px 0 0}\n.community-columns{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:clamp(18px,4vw,50px)}\n.feed-tools,.form-actions{display:flex;align-items:center;justify-content:space-between;gap:10px}\n.feed-tools h3{font-size:15px;margin:0}\n.feed-tools button,#older-messages{font-size:13px;padding:4px 10px}\n#public-messages{list-style:none;padding:0;margin:8px 0}\n#public-messages li{border-top:1px solid #d8e4de;padding:10px 0}\n.message-meta{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 12px;font-size:14px;overflow-wrap:anywhere}\n.message-meta time{font-size:12px;color:#57716a}\n#public-messages p{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;margin:3px 0 0}\n.community-form{display:grid;align-content:start;gap:6px;min-width:0}\n.community-form label{font-size:14px;font-weight:650}\n.community-form :is(input,textarea){display:block;width:100%;min-width:0;box-sizing:border-box;border:1px solid #a6c3b7;border-radius:8px;background:white;color:#143b35;font:inherit;line-height:1.5;padding:8px 10px;margin:0 0 4px}\n.community-form textarea{resize:vertical;min-height:72px}\n.community-form :is(input,textarea):focus-visible,.contact-link:focus-visible{outline:3px solid #167e78;outline-offset:2px}\n.community-form button[type=submit]{background:#126351;color:white;border-color:#126351;padding:8px 16px}\n.community-form button[type=submit]:hover:enabled{background:#0c5143}\n.community-note{margin:4px 0}\n.community-note:empty{display:none}\n.community-note[data-error=\"true\"]{color:#992e28}\n.contact-body{margin:0;color:#143b35;background:#eff5f0;font:15px/1.5 \"PingFang SC\",\"Microsoft YaHei\",system-ui,sans-serif}\n.contact-body *{box-sizing:border-box}\n.contact-mast{background:#103e36;color:#fff}\n.contact-bar{max-width:760px;margin:auto;padding:14px clamp(14px,3vw,28px);display:flex;align-items:center;justify-content:space-between;gap:10px}\n.contact-bar select{font:inherit;font-size:14px;padding:6px 9px;color:#fff;background:#194e43;border:1px solid #67978a;border-radius:8px}\n.contact-main{max-width:760px;margin:24px auto;padding:0 clamp(14px,3vw,28px)}\n.contact-card{background:#fff;border:1px solid #c9dbd4;border-radius:15px;padding:clamp(18px,4vw,32px)}\n.contact-card h1{font-size:clamp(23px,4vw,30px);margin:0 0 5px;line-height:1.3}\n.contact-card .community-intro{margin-bottom:20px}\n.contact-card button{font:650 15px/1.5 system-ui,sans-serif;cursor:pointer;border:1px solid;border-radius:8px}\n.contact-card button:disabled{opacity:.48;cursor:default}\n@media(max-width:680px){.community-columns{grid-template-columns:minmax(0,1fr)}.community-form{border-top:1px solid #d8e4de;padding-top:14px}.contact-card .community-form{border:0;padding-top:0}}\n</style>\n</head>\n<body class=\"contact-body\">\n<header class=\"contact-mast\"><div class=\"contact-bar\">\n  <a class=\"contact-back\" href=\"./index.html\" id=\"back-board\" data-word=\"back\">← 返回棋盘</a>\n  <select id=\"contact-language\" aria-label=\"语言\"><option value=\"zh\">简体中文</option><option value=\"zh-Hant\">繁體中文</option><option value=\"en\">English</option><option value=\"ja\">日本語</option></select>\n</div></header>\n<main class=\"contact-main\"><section class=\"contact-card\">\n  <div class=\"community-intro\"><h1 data-word=\"contactHeading\">联系 TATSU</h1>\n  <p data-word=\"privateHint\">建议会私下发给 TATSU。如果希望收到回复，请留下联系方式。</p></div>\n  <form class=\"community-form\" id=\"contact-form\">\n    <label for=\"suggestion\" data-word=\"suggestion\">建议内容</label>\n    <textarea id=\"suggestion\" name=\"message\" rows=\"6\" maxlength=\"5000\" required></textarea>\n    <label for=\"sender\" data-word=\"sender\">你的称呼（选填）</label><input id=\"sender\" name=\"name\" autocomplete=\"nickname\" maxlength=\"80\">\n    <label for=\"reply\" data-word=\"reply\">联系方式（选填）</label><input id=\"reply\" name=\"contact\" maxlength=\"200\">\n    <div class=\"form-actions\"><button type=\"submit\" id=\"send-feedback\" data-word=\"send\">发送建议</button></div>\n    <p class=\"community-note\" id=\"contact-state\" role=\"status\"></p>\n  </form>\n</section></main><script>// 填好后随站点一起发布。这里只放公开的接口地址和表单编号。\nwindow.SONAR_SERVICES = {\n  // 例如 https://sonar-guestbook.YOUR-SUBDOMAIN.workers.dev/messages\n  guestbookUrl: \"https://sonar-guestbook-api.v77k4swjj9.workers.dev/messages\",\n  // Formspree 表单地址 https://formspree.io/f/xxxxxxxx 最后一段的编号\n  formspreeId: \"mqpqqned\"\n};\n\n<\/script><script>(() => {\n  \"use strict\";\n  const words = {\n    guestbook:[\"留言板\",\"留言板\",\"Guestbook\",\"掲示板\"],\n    publicHint:[\"发表后，所有访问者都能看到你的昵称和留言。\",\"發表後，所有訪客都能看到你的暱稱和留言。\",\"Your nickname and message will be visible to everyone.\",\"投稿すると、ニックネームとメッセージが全員に公開されます。\"],\n    recent:[\"最新留言\",\"最新留言\",\"Recent messages\",\"新着メッセージ\"],\n    refresh:[\"刷新\",\"重新整理\",\"Refresh\",\"更新\"],\n    older:[\"查看更多\",\"顯示更多\",\"Show older messages\",\"以前の投稿を表示\"],\n    nickname:[\"昵称\",\"暱稱\",\"Nickname\",\"ニックネーム\"],\n    message:[\"留言\",\"留言\",\"Message\",\"メッセージ\"],\n    publish:[\"发表留言\",\"發表留言\",\"Post message\",\"投稿する\"],\n    contact:[\"联系我\",\"聯絡我\",\"Contact\",\"お問い合わせ\"],\n    contactHeading:[\"联系 TATSU\",\"聯絡 TATSU\",\"Contact TATSU\",\"TATSU に連絡\"],\n    back:[\"← 返回棋盘\",\"← 返回棋盤\",\"← Back to board\",\"← 盤面に戻る\"],\n    privateHint:[\"建议会私下发给 TATSU。如果希望收到回复，请留下联系方式。\",\"建議會私下寄給 TATSU。如果希望收到回覆，請留下聯絡方式。\",\"Your feedback goes privately to TATSU. Leave contact details if you would like a reply.\",\"ご意見は TATSU に直接届きます。返信をご希望の場合は連絡先をご記入ください。\"],\n    suggestion:[\"建议内容\",\"建議內容\",\"Your feedback\",\"ご意見・ご要望\"],\n    sender:[\"你的称呼（选填）\",\"你的稱呼（選填）\",\"Your name (optional)\",\"お名前（任意）\"],\n    reply:[\"联系方式（选填）\",\"聯絡方式（選填）\",\"Contact details (optional)\",\"連絡先（任意）\"],\n    send:[\"发送建议\",\"送出建議\",\"Send feedback\",\"送信する\"],\n    language:[\"语言\",\"語言\",\"Language\",\"言語\"],\n    offlineBoard:[\"留言板尚未开放。\",\"留言板尚未開放。\",\"The guestbook is not open yet.\",\"掲示板は現在準備中です。\"],\n    offlineMail:[\"建议收件服务尚未开通。\",\"建議收件服務尚未開通。\",\"The feedback inbox is not open yet.\",\"お問い合わせの受付は現在準備中です。\"],\n    loading:[\"正在读取留言…\",\"正在讀取留言…\",\"Loading messages…\",\"投稿を読み込み中…\"],\n    empty:[\"还没有留言。\",\"目前還沒有留言。\",\"No messages yet.\",\"まだ投稿がありません。\"],\n    loadError:[\"读取失败，请点「刷新」重试。\",\"讀取失敗，請點「重新整理」再試一次。\",\"Couldn’t load messages. Select Refresh to try again.\",\"読み込めませんでした。「更新」を押して再度お試しください。\"],\n    sending:[\"正在发送…\",\"正在傳送…\",\"Sending…\",\"送信中…\"],\n    published:[\"留言已公开发表。\",\"留言已公開發表。\",\"Your message is now public.\",\"メッセージを公開しました。\"],\n    sent:[\"建议已提交，谢谢你的反馈。\",\"建議已送出，謝謝你的回饋。\",\"Feedback submitted. Thank you.\",\"ご意見を受け付けました。ありがとうございます。\"],\n    limit:[\"操作过于频繁，请稍后再试。\",\"操作過於頻繁，請稍後再試。\",\"Too many requests. Please try later.\",\"しばらく待ってから再度お試しください。\"],\n    sendError:[\"未能确认提交结果，请检查网络后重试。\",\"無法確認送出結果，請檢查網路後再試一次。\",\"We couldn’t confirm submission. Check your connection and try again.\",\"送信結果を確認できませんでした。接続を確認して再度お試しください。\"],\n    invalid:[\"昵称需为 1～24 个字符，留言需为 1～500 个字符。\",\"暱稱須為 1～24 個字元，留言須為 1～500 個字元。\",\"Use 1–24 characters for your nickname and 1–500 for your message.\",\"ニックネームは1〜24文字、メッセージは1〜500文字で入力してください。\"],\n    required:[\"请填写建议内容。\",\"請填寫建議內容。\",\"Please enter your feedback.\",\"ご意見をご記入ください。\"],\n    forbidden:[\"当前网址尚未获准发表留言，请从正式站点打开。\",\"目前網址尚未獲准發表留言，請從正式網站開啟。\",\"Posting is unavailable from this address. Open the published site to post.\",\"このURLからは投稿できません。公開サイトからご利用ください。\"]\n  };\n  const languages = [\"zh\",\"zh-Hant\",\"en\",\"ja\"];\n  const preference = \"boom-beach-sonar-f2-language\";\n  const normalize = lang => lang === \"zh-CN\" ? \"zh\" : languages.includes(lang) ? lang : \"zh\";\n  const byId = id => document.getElementById(id);\n  const config = window.SONAR_SERVICES || {};\n  let current = normalize(document.documentElement.lang);\n  const word = key => words[key][languages.indexOf(current)];\n  const notices = new Map();\n  function notice(id, key, error = false) {\n    notices.set(id,key);\n    const element = byId(id);\n    element.textContent = key ? word(key) : \"\";\n    element.dataset.error = String(error);\n  }\n  function translate() {\n    document.querySelectorAll(\"[data-word]\").forEach(node => {node.textContent = word(node.dataset.word);});\n    for (const [id,key] of notices) byId(id).textContent = key ? word(key) : \"\";\n    document.querySelectorAll(\"time[datetime]\").forEach(node => {\n      const date = new Date(node.dateTime);\n      node.textContent = new Intl.DateTimeFormat(document.documentElement.lang,{dateStyle:\"medium\",timeStyle:\"short\"}).format(date);\n    });\n    if (byId(\"contact-link\")) byId(\"contact-link\").href = \"./contact.html?lang=\"+current;\n  }\n  function getGuestbookUrl() {\n    if (!config.guestbookUrl) return null;\n    try {\n      const url = new URL(config.guestbookUrl);\n      const local = [\"127.0.0.1\",\"localhost\",\"[::1]\"].includes(url.hostname);\n      if (url.protocol === \"https:\" || (local && url.protocol === \"http:\")) return url;\n    } catch {}\n    return null;\n  }\n  async function request(url, options = {}) {\n    const controller = new AbortController();\n    const timeout = setTimeout(() => controller.abort(),18000);\n    try {\n      const response = await fetch(url,{...options,signal:controller.signal,credentials:\"omit\",cache:\"no-store\"});\n      if (!response.ok) {\n        const error = new Error(\"Request failed\");\n        error.status = response.status;\n        throw error;\n      }\n      return await response.json();\n    } finally {clearTimeout(timeout);}\n  }\n  function startGuestbook() {\n    const url = getGuestbookUrl();\n    const form = byId(\"guest-form\"), list = byId(\"public-messages\");\n    const refresh = byId(\"refresh-messages\"), older = byId(\"older-messages\"), publish = byId(\"publish-message\");\n    let cursor = null, busy = false, submission = null;\n    function lock(value) {\n      busy = value;\n      refresh.disabled = older.disabled = publish.disabled = value || !url;\n    }\n    function drawItem(item) {\n      if (!Number.isSafeInteger(item?.id) || typeof item.nickname !== \"string\" || typeof item.message !== \"string\" ||\n          !Number.isFinite(Date.parse(item.createdAt))) throw new Error(\"Invalid message\");\n      const li = document.createElement(\"li\"), meta = document.createElement(\"div\");\n      li.dataset.messageId = item.id; meta.className = \"message-meta\";\n      const name = document.createElement(\"strong\"), date = document.createElement(\"time\"), body = document.createElement(\"p\");\n      name.textContent = item.nickname; date.dateTime = item.createdAt; body.textContent = item.message;\n      meta.append(name,date); li.append(meta,body); return li;\n    }\n    async function load(append) {\n      if (busy || !url) return;\n      lock(true); notice(\"feed-state\",\"loading\");\n      try {\n        const target = new URL(url);\n        if (append && cursor) target.searchParams.set(\"before\",String(cursor));\n        const data = await request(target);\n        if (!Array.isArray(data.messages)) throw new Error(\"Invalid response\");\n        const entries = data.messages.map(drawItem);\n        if (!append) list.replaceChildren();\n        for (const li of entries) if (!list.querySelector('[data-message-id=\"'+li.dataset.messageId+'\"]')) list.append(li);\n        cursor = data.nextCursor; older.hidden = !cursor;\n        notice(\"feed-state\",list.childElementCount ? \"\" : \"empty\");\n        translate();\n      } catch {notice(\"feed-state\",\"loadError\",true);}\n      finally {lock(false);}\n    }\n    refresh.onclick = () => load(false); older.onclick = () => load(true);\n    form.onsubmit = async event => {\n      event.preventDefault();\n      if (!url || busy) return;\n      const nickname = byId(\"guest-name\").value.trim(), message = byId(\"guest-text\").value.trim();\n      if (!nickname || [...nickname].length>24 || !message || [...message].length>500) {notice(\"post-state\",\"invalid\",true);return;}\n      if (submission?.nickname !== nickname || submission?.message !== message) {\n        submission = {nickname,message,submissionId:crypto.randomUUID()};\n      }\n      lock(true); notice(\"post-state\",\"sending\");\n      try {\n        const data = await request(url,{method:\"POST\",headers:{\"Content-Type\":\"application/json\"},body:JSON.stringify(submission)});\n        const entry = drawItem(data.message);\n        if (!list.querySelector('[data-message-id=\"'+entry.dataset.messageId+'\"]')) list.prepend(entry);\n        if (byId(\"guest-text\").value.trim() === message) byId(\"guest-text\").value = \"\";\n        submission = null;\n        notice(\"post-state\",\"published\"); notice(\"feed-state\",\"\"); translate();\n      } catch (error) {\n        const reason = ({400:\"invalid\",403:\"forbidden\",429:\"limit\"})[error.status] || \"sendError\";\n        notice(\"post-state\",reason,true);\n      } finally {lock(false);}\n    };\n    if (url) load(false);\n    else {lock(false);notice(\"feed-state\",\"offlineBoard\");}\n  }\n  function startContact() {\n    const select = byId(\"contact-language\");\n    let saved = \"zh\"; try {saved = localStorage.getItem(preference);} catch {}\n    function choose(value) {\n      current = normalize(value);\n      document.documentElement.lang = current === \"zh\" ? \"zh-CN\" : current;\n      select.value = current;\n      select.setAttribute(\"aria-label\",word(\"language\"));\n      document.title = word(\"contactHeading\");\n      byId(\"back-board\").href = \"./index.html?lang=\"+current;\n      translate();\n    }\n    choose(new URLSearchParams(location.search).get(\"lang\") || saved);\n    select.onchange = () => {\n      choose(select.value);\n      try {localStorage.setItem(preference,current);} catch {}\n      try {history.replaceState(null,\"\",\"?lang=\"+current);} catch {}\n    };\n    const form = byId(\"contact-form\"), button = byId(\"send-feedback\");\n    const id = String(config.formspreeId || \"\").trim();\n    if (!/^[a-zA-Z0-9_-]{5,64}$/.test(id)) {button.disabled=true;notice(\"contact-state\",\"offlineMail\");}\n    form.onsubmit = async event => {\n      event.preventDefault();\n      if (button.disabled) return;\n      const payload = new FormData(form);\n      const message = String(payload.get(\"message\")).trim();\n      if (!message) {notice(\"contact-state\",\"required\",true);return;}\n      payload.set(\"message\",message);\n      button.disabled = true; notice(\"contact-state\",\"sending\");\n      try {\n        const data = await request(\"https://formspree.io/f/\"+id,{method:\"POST\",headers:{Accept:\"application/json\"},body:payload});\n        if (!data || data.ok === false || data.errors?.length) throw new Error(\"Submission rejected\");\n        if (byId(\"suggestion\").value.trim() === message) byId(\"suggestion\").value=\"\";\n        notice(\"contact-state\",\"sent\");\n      } catch(error) {notice(\"contact-state\",error.status===429?\"limit\":\"sendError\",true);}\n      finally {button.disabled=false;}\n    };\n  }\n  if (byId(\"guest-form\")) {\n    document.addEventListener(\"sonar-language\",event => {current=normalize(event.detail);translate();});\n    const selection = new URLSearchParams(location.search).get(\"lang\");\n    const select = byId(\"languageToggle\");\n    if (languages.includes(selection) && select && selection !== current) {\n      select.value = selection;\n      select.dispatchEvent(new Event(\"change\",{bubbles:true}));\n    }\n    if (selection) try {\n      const clean = new URL(location.href);\n      clean.searchParams.delete(\"lang\");\n      history.replaceState(null,\"\",clean);\n    } catch {}\n    current = normalize(document.documentElement.lang);\n    translate(); startGuestbook();\n  } else if (byId(\"contact-form\")) startContact();\n})();\n<\/script></body></html>\n";
+    let html = "<!doctype html>\n<html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>联系家恩宝贝</title><style>.help-tools{flex-wrap:wrap}\n@media(min-width:761px){main{align-items:stretch}}\n.help-tools .contact-link,.contact-back{display:inline-flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid #67978a;background:#194e43;color:#fff;text-decoration:none;font:650 13px/1.5 inherit;padding:5px 11px;min-height:34px}\n.help-tools .contact-link{font-size:13px;font-weight:650}\n.help-tools .contact-link:hover,.contact-back:hover{background:#276355}\n.community-wrap{max-width:1160px;margin:0 auto;padding:0 clamp(12px,3vw,32px) 30px}\n.community-card{padding:clamp(16px,2vw,24px)}\n.community-intro{margin-bottom:18px}\n.community-intro h2{font-size:20px;line-height:1.3}\n.community-intro p,.community-note{color:#476762;font-size:13px}\n.community-intro p{margin:4px 0 0}\n.community-columns{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:clamp(18px,4vw,50px)}\n.feed-tools,.form-actions{display:flex;align-items:center;justify-content:space-between;gap:10px}\n.feed-tools h3{font-size:15px;margin:0}\n.feed-tools button,#older-messages{font-size:13px;padding:4px 10px}\n#public-messages{list-style:none;padding:0;margin:8px 0}\n#public-messages li{border-top:1px solid #d8e4de;padding:10px 0}\n.message-meta{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 12px;font-size:14px;overflow-wrap:anywhere}\n.message-meta time{font-size:12px;color:#57716a}\n#public-messages p{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;margin:3px 0 0}\n.community-form{display:grid;align-content:start;gap:6px;min-width:0}\n.community-form label{font-size:14px;font-weight:650}\n.community-form :is(input,textarea){display:block;width:100%;min-width:0;box-sizing:border-box;border:1px solid #a6c3b7;border-radius:8px;background:white;color:#143b35;font:inherit;line-height:1.5;padding:8px 10px;margin:0 0 4px}\n.community-form textarea{resize:vertical;min-height:72px}\n.community-form :is(input,textarea):focus-visible,.contact-link:focus-visible{outline:3px solid #167e78;outline-offset:2px}\n.community-form button[type=submit]{background:#126351;color:white;border-color:#126351;padding:8px 16px}\n.community-form button[type=submit]:hover:enabled{background:#0c5143}\n.community-note{margin:4px 0}\n.community-note:empty{display:none}\n.community-note[data-error=\"true\"]{color:#992e28}\n.contact-body{margin:0;color:#143b35;background:#eff5f0;font:15px/1.5 \"PingFang SC\",\"Microsoft YaHei\",system-ui,sans-serif}\n.contact-body *{box-sizing:border-box}\n.contact-mast{background:#103e36;color:#fff}\n.contact-bar{max-width:760px;margin:auto;padding:14px clamp(14px,3vw,28px);display:flex;align-items:center;justify-content:space-between;gap:10px}\n.contact-bar select{font:inherit;font-size:14px;padding:6px 9px;color:#fff;background:#194e43;border:1px solid #67978a;border-radius:8px}\n.contact-main{max-width:760px;margin:24px auto;padding:0 clamp(14px,3vw,28px)}\n.contact-card{background:#fff;border:1px solid #c9dbd4;border-radius:15px;padding:clamp(18px,4vw,32px)}\n.contact-card h1{font-size:clamp(23px,4vw,30px);margin:0 0 5px;line-height:1.3}\n.contact-card .community-intro{margin-bottom:20px}\n.contact-card button{font:650 15px/1.5 system-ui,sans-serif;cursor:pointer;border:1px solid;border-radius:8px}\n.contact-card button:disabled{opacity:.48;cursor:default}\n@media(max-width:680px){.community-columns{grid-template-columns:minmax(0,1fr)}.community-form{border-top:1px solid #d8e4de;padding-top:14px}.contact-card .community-form{border:0;padding-top:0}}\n</style>\n</head>\n<body class=\"contact-body\">\n<header class=\"contact-mast\"><div class=\"contact-bar\">\n  <a class=\"contact-back\" href=\"./index.html\" id=\"back-board\" data-word=\"back\">← 返回棋盘</a>\n  <select id=\"contact-language\" aria-label=\"语言\"><option value=\"zh\">简体中文</option><option value=\"zh-Hant\">繁體中文</option><option value=\"en\">English</option><option value=\"ja\">日本語</option></select>\n</div></header>\n<main class=\"contact-main\"><section class=\"contact-card\">\n  <div class=\"community-intro\"><h1 data-word=\"contactHeading\">联系家恩宝贝</h1>\n  <p data-word=\"privateHint\">建议会私下发给 家恩宝贝。如果希望收到回复，请留下联系方式。</p></div>\n  <form class=\"community-form\" id=\"contact-form\">\n    <label for=\"suggestion\" data-word=\"suggestion\">建议内容</label>\n    <textarea id=\"suggestion\" name=\"message\" rows=\"6\" maxlength=\"5000\" required></textarea>\n    <label for=\"sender\" data-word=\"sender\">你的称呼（选填）</label><input id=\"sender\" name=\"name\" autocomplete=\"nickname\" maxlength=\"80\">\n    <label for=\"reply\" data-word=\"reply\">联系方式（选填）</label><input id=\"reply\" name=\"contact\" maxlength=\"200\">\n    <div class=\"form-actions\"><button type=\"submit\" id=\"send-feedback\" data-word=\"send\">发送建议</button></div>\n    <p class=\"community-note\" id=\"contact-state\" role=\"status\"></p>\n  </form>\n</section></main><script>// 填好后随站点一起发布。这里只放公开的接口地址和表单编号。\nwindow.SONAR_SERVICES = {\n  // 例如 https://sonar-guestbook.YOUR-SUBDOMAIN.workers.dev/messages\n  guestbookUrl: \"https://sonar-guestbook-api.v77k4swjj9.workers.dev/messages\",\n  // Formspree 表单地址 https://formspree.io/f/xxxxxxxx 最后一段的编号\n  formspreeId: \"mqpqqned\"\n};\n\n<\/script><script>(() => {\n  \"use strict\";\n  const words = {\n    guestbook:[\"留言板\",\"留言板\",\"Guestbook\",\"掲示板\"],\n    publicHint:[\"发表后，所有访问者都能看到你的昵称和留言。\",\"發表後，所有訪客都能看到你的暱稱和留言。\",\"Your nickname and message will be visible to everyone.\",\"投稿すると、ニックネームとメッセージが全員に公開されます。\"],\n    recent:[\"最新留言\",\"最新留言\",\"Recent messages\",\"新着メッセージ\"],\n    refresh:[\"刷新\",\"重新整理\",\"Refresh\",\"更新\"],\n    older:[\"查看更多\",\"顯示更多\",\"Show older messages\",\"以前の投稿を表示\"],\n    nickname:[\"昵称\",\"暱稱\",\"Nickname\",\"ニックネーム\"],\n    message:[\"留言\",\"留言\",\"Message\",\"メッセージ\"],\n    publish:[\"发表留言\",\"發表留言\",\"Post message\",\"投稿する\"],\n    contact:[\"联系我\",\"聯絡我\",\"Contact\",\"お問い合わせ\"],\n    contactHeading:[\"联系家恩宝贝\",\"聯絡家恩宝贝\",\"Contact 家恩宝贝\",\"家恩宝贝 に連絡\"],\n    back:[\"← 返回棋盘\",\"← 返回棋盤\",\"← Back to board\",\"← 盤面に戻る\"],\n    privateHint:[\"建议会私下发给 家恩宝贝。如果希望收到回复，请留下联系方式。\",\"建議會私下寄給 家恩宝贝。如果希望收到回覆，請留下聯絡方式。\",\"Your feedback goes privately to 家恩宝贝. Leave contact details if you would like a reply.\",\"ご意見は 家恩宝贝 に直接届きます。返信をご希望の場合は連絡先をご記入ください。\"],\n    suggestion:[\"建议内容\",\"建議內容\",\"Your feedback\",\"ご意見・ご要望\"],\n    sender:[\"你的称呼（选填）\",\"你的稱呼（選填）\",\"Your name (optional)\",\"お名前（任意）\"],\n    reply:[\"联系方式（选填）\",\"聯絡方式（選填）\",\"Contact details (optional)\",\"連絡先（任意）\"],\n    send:[\"发送建议\",\"送出建議\",\"Send feedback\",\"送信する\"],\n    language:[\"语言\",\"語言\",\"Language\",\"言語\"],\n    offlineBoard:[\"留言板尚未开放。\",\"留言板尚未開放。\",\"The guestbook is not open yet.\",\"掲示板は現在準備中です。\"],\n    offlineMail:[\"建议收件服务尚未开通。\",\"建議收件服務尚未開通。\",\"The feedback inbox is not open yet.\",\"お問い合わせの受付は現在準備中です。\"],\n    loading:[\"正在读取留言…\",\"正在讀取留言…\",\"Loading messages…\",\"投稿を読み込み中…\"],\n    empty:[\"还没有留言。\",\"目前還沒有留言。\",\"No messages yet.\",\"まだ投稿がありません。\"],\n    loadError:[\"读取失败，请点「刷新」重试。\",\"讀取失敗，請點「重新整理」再試一次。\",\"Couldn’t load messages. Select Refresh to try again.\",\"読み込めませんでした。「更新」を押して再度お試しください。\"],\n    sending:[\"正在发送…\",\"正在傳送…\",\"Sending…\",\"送信中…\"],\n    published:[\"留言已公开发表。\",\"留言已公開發表。\",\"Your message is now public.\",\"メッセージを公開しました。\"],\n    sent:[\"建议已提交，谢谢你的反馈。\",\"建議已送出，謝謝你的回饋。\",\"Feedback submitted. Thank you.\",\"ご意見を受け付けました。ありがとうございます。\"],\n    limit:[\"操作过于频繁，请稍后再试。\",\"操作過於頻繁，請稍後再試。\",\"Too many requests. Please try later.\",\"しばらく待ってから再度お試しください。\"],\n    sendError:[\"未能确认提交结果，请检查网络后重试。\",\"無法確認送出結果，請檢查網路後再試一次。\",\"We couldn’t confirm submission. Check your connection and try again.\",\"送信結果を確認できませんでした。接続を確認して再度お試しください。\"],\n    invalid:[\"昵称需为 1～24 个字符，留言需为 1～500 个字符。\",\"暱稱須為 1～24 個字元，留言須為 1～500 個字元。\",\"Use 1–24 characters for your nickname and 1–500 for your message.\",\"ニックネームは1〜24文字、メッセージは1〜500文字で入力してください。\"],\n    required:[\"请填写建议内容。\",\"請填寫建議內容。\",\"Please enter your feedback.\",\"ご意見をご記入ください。\"],\n    forbidden:[\"当前网址尚未获准发表留言，请从正式站点打开。\",\"目前網址尚未獲准發表留言，請從正式網站開啟。\",\"Posting is unavailable from this address. Open the published site to post.\",\"このURLからは投稿できません。公開サイトからご利用ください。\"]\n  };\n  const languages = [\"zh\",\"zh-Hant\",\"en\",\"ja\"];\n  const preference = \"boom-beach-sonar-f2-language\";\n  const normalize = lang => lang === \"zh-CN\" ? \"zh\" : languages.includes(lang) ? lang : \"zh\";\n  const byId = id => document.getElementById(id);\n  const config = window.SONAR_SERVICES || {};\n  let current = normalize(document.documentElement.lang);\n  const word = key => words[key][languages.indexOf(current)];\n  const notices = new Map();\n  function notice(id, key, error = false) {\n    notices.set(id,key);\n    const element = byId(id);\n    element.textContent = key ? word(key) : \"\";\n    element.dataset.error = String(error);\n  }\n  function translate() {\n    document.querySelectorAll(\"[data-word]\").forEach(node => {node.textContent = word(node.dataset.word);});\n    for (const [id,key] of notices) byId(id).textContent = key ? word(key) : \"\";\n    document.querySelectorAll(\"time[datetime]\").forEach(node => {\n      const date = new Date(node.dateTime);\n      node.textContent = new Intl.DateTimeFormat(document.documentElement.lang,{dateStyle:\"medium\",timeStyle:\"short\"}).format(date);\n    });\n    if (byId(\"contact-link\")) byId(\"contact-link\").href = \"./contact.html?lang=\"+current;\n  }\n  function getGuestbookUrl() {\n    if (!config.guestbookUrl) return null;\n    try {\n      const url = new URL(config.guestbookUrl);\n      const local = [\"127.0.0.1\",\"localhost\",\"[::1]\"].includes(url.hostname);\n      if (url.protocol === \"https:\" || (local && url.protocol === \"http:\")) return url;\n    } catch {}\n    return null;\n  }\n  async function request(url, options = {}) {\n    const controller = new AbortController();\n    const timeout = setTimeout(() => controller.abort(),18000);\n    try {\n      const response = await fetch(url,{...options,signal:controller.signal,credentials:\"omit\",cache:\"no-store\"});\n      if (!response.ok) {\n        const error = new Error(\"Request failed\");\n        error.status = response.status;\n        throw error;\n      }\n      return await response.json();\n    } finally {clearTimeout(timeout);}\n  }\n  function startGuestbook() {\n    const url = getGuestbookUrl();\n    const form = byId(\"guest-form\"), list = byId(\"public-messages\");\n    const refresh = byId(\"refresh-messages\"), older = byId(\"older-messages\"), publish = byId(\"publish-message\");\n    let cursor = null, busy = false, submission = null;\n    function lock(value) {\n      busy = value;\n      refresh.disabled = older.disabled = publish.disabled = value || !url;\n    }\n    function drawItem(item) {\n      if (!Number.isSafeInteger(item?.id) || typeof item.nickname !== \"string\" || typeof item.message !== \"string\" ||\n          !Number.isFinite(Date.parse(item.createdAt))) throw new Error(\"Invalid message\");\n      const li = document.createElement(\"li\"), meta = document.createElement(\"div\");\n      li.dataset.messageId = item.id; meta.className = \"message-meta\";\n      const name = document.createElement(\"strong\"), date = document.createElement(\"time\"), body = document.createElement(\"p\");\n      name.textContent = item.nickname; date.dateTime = item.createdAt; body.textContent = item.message;\n      meta.append(name,date); li.append(meta,body); return li;\n    }\n    async function load(append) {\n      if (busy || !url) return;\n      lock(true); notice(\"feed-state\",\"loading\");\n      try {\n        const target = new URL(url);\n        if (append && cursor) target.searchParams.set(\"before\",String(cursor));\n        const data = await request(target);\n        if (!Array.isArray(data.messages)) throw new Error(\"Invalid response\");\n        const entries = data.messages.map(drawItem);\n        if (!append) list.replaceChildren();\n        for (const li of entries) if (!list.querySelector('[data-message-id=\"'+li.dataset.messageId+'\"]')) list.append(li);\n        cursor = data.nextCursor; older.hidden = !cursor;\n        notice(\"feed-state\",list.childElementCount ? \"\" : \"empty\");\n        translate();\n      } catch {notice(\"feed-state\",\"loadError\",true);}\n      finally {lock(false);}\n    }\n    refresh.onclick = () => load(false); older.onclick = () => load(true);\n    form.onsubmit = async event => {\n      event.preventDefault();\n      if (!url || busy) return;\n      const nickname = byId(\"guest-name\").value.trim(), message = byId(\"guest-text\").value.trim();\n      if (!nickname || [...nickname].length>24 || !message || [...message].length>500) {notice(\"post-state\",\"invalid\",true);return;}\n      if (submission?.nickname !== nickname || submission?.message !== message) {\n        submission = {nickname,message,submissionId:crypto.randomUUID()};\n      }\n      lock(true); notice(\"post-state\",\"sending\");\n      try {\n        const data = await request(url,{method:\"POST\",headers:{\"Content-Type\":\"application/json\"},body:JSON.stringify(submission)});\n        const entry = drawItem(data.message);\n        if (!list.querySelector('[data-message-id=\"'+entry.dataset.messageId+'\"]')) list.prepend(entry);\n        if (byId(\"guest-text\").value.trim() === message) byId(\"guest-text\").value = \"\";\n        submission = null;\n        notice(\"post-state\",\"published\"); notice(\"feed-state\",\"\"); translate();\n      } catch (error) {\n        const reason = ({400:\"invalid\",403:\"forbidden\",429:\"limit\"})[error.status] || \"sendError\";\n        notice(\"post-state\",reason,true);\n      } finally {lock(false);}\n    };\n    if (url) load(false);\n    else {lock(false);notice(\"feed-state\",\"offlineBoard\");}\n  }\n  function startContact() {\n    const select = byId(\"contact-language\");\n    let saved = \"zh\"; try {saved = localStorage.getItem(preference);} catch {}\n    function choose(value) {\n      current = normalize(value);\n      document.documentElement.lang = current === \"zh\" ? \"zh-CN\" : current;\n      select.value = current;\n      select.setAttribute(\"aria-label\",word(\"language\"));\n      document.title = word(\"contactHeading\");\n      byId(\"back-board\").href = \"./index.html?lang=\"+current;\n      translate();\n    }\n    choose(new URLSearchParams(location.search).get(\"lang\") || saved);\n    select.onchange = () => {\n      choose(select.value);\n      try {localStorage.setItem(preference,current);} catch {}\n      try {history.replaceState(null,\"\",\"?lang=\"+current);} catch {}\n    };\n    const form = byId(\"contact-form\"), button = byId(\"send-feedback\");\n    const id = String(config.formspreeId || \"\").trim();\n    if (!/^[a-zA-Z0-9_-]{5,64}$/.test(id)) {button.disabled=true;notice(\"contact-state\",\"offlineMail\");}\n    form.onsubmit = async event => {\n      event.preventDefault();\n      if (button.disabled) return;\n      const payload = new FormData(form);\n      const message = String(payload.get(\"message\")).trim();\n      if (!message) {notice(\"contact-state\",\"required\",true);return;}\n      payload.set(\"message\",message);\n      button.disabled = true; notice(\"contact-state\",\"sending\");\n      try {\n        const data = await request(\"https://formspree.io/f/\"+id,{method:\"POST\",headers:{Accept:\"application/json\"},body:payload});\n        if (!data || data.ok === false || data.errors?.length) throw new Error(\"Submission rejected\");\n        if (byId(\"suggestion\").value.trim() === message) byId(\"suggestion\").value=\"\";\n        notice(\"contact-state\",\"sent\");\n      } catch(error) {notice(\"contact-state\",error.status===429?\"limit\":\"sendError\",true);}\n      finally {button.disabled=false;}\n    };\n  }\n  if (byId(\"guest-form\")) {\n    document.addEventListener(\"sonar-language\",event => {current=normalize(event.detail);translate();});\n    const selection = new URLSearchParams(location.search).get(\"lang\");\n    const select = byId(\"languageToggle\");\n    if (languages.includes(selection) && select && selection !== current) {\n      select.value = selection;\n      select.dispatchEvent(new Event(\"change\",{bubbles:true}));\n    }\n    if (selection) try {\n      const clean = new URL(location.href);\n      clean.searchParams.delete(\"lang\");\n      history.replaceState(null,\"\",clean);\n    } catch {}\n    current = normalize(document.documentElement.lang);\n    translate(); startGuestbook();\n  } else if (byId(\"contact-form\")) startContact();\n})();\n<\/script></body></html>\n";
     html = html.replace('<html lang="zh-CN">','<html lang="'+document.documentElement.lang+'">');
     html = html.replace('<script>'+"// 填好后随站点一起发布。这里只放公开的接口地址和表单编号。\nwindow.SONAR_SERVICES = {\n  // 例如 https://sonar-guestbook.YOUR-SUBDOMAIN.workers.dev/messages\n  guestbookUrl: \"https://sonar-guestbook-api.v77k4swjj9.workers.dev/messages\",\n  // Formspree 表单地址 https://formspree.io/f/xxxxxxxx 最后一段的编号\n  formspreeId: \"mqpqqned\"\n};\n\n"+'<\/script>',setup);
     html = html.replace('</body>',returnLink+'</body>');
