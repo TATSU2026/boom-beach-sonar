@@ -176,7 +176,7 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
 .odds-control{margin-inline-start:auto;gap:5px;padding:5px 2px;font-size:13px;cursor:pointer;color:var(--muted)}
 .odds-control input{margin:0;width:16px;height:16px;accent-color:var(--accent)}
 
-/* F4.3: the ocean and controls stay fixed; only the board scales. */
+/* F4.3.1: the ocean and controls stay fixed; only the board scales. */
 .sea .scene{min-width:0;aspect-ratio:1.12;touch-action:none}
 .sea .board{top:48%;width:61%;transform:translate(-50%,-50%) perspective(185cqw) rotateX(44deg) rotateZ(45deg) scale(var(--board-zoom,1));transform-origin:center;touch-action:none}
 .sea-controls{position:absolute;inset:0;z-index:5;pointer-events:none}
@@ -294,24 +294,32 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
 .sea-controls #confirm-sunk:enabled::before{background:rgb(25 132 112 / 85%)}
 .sea-controls #confirm-sunk:disabled{color:#dce8e7;opacity:.65}
 .sea-controls #confirm-sunk:disabled::before{background:rgb(24 89 99 / 68%)}
-@supports not (clip-path:shape(from 0 0,line to 100% 0,line to 0 100%,close)){
- .sea-controls [data-mode],.sea-controls #confirm-sunk,.sea-controls #reset{
- filter:url(#round-button)
- }
- .sea-controls [data-mode]::before,.sea-controls #confirm-sunk::before,.sea-controls #reset::before{clip-path:polygon(0 0,100% 0,0 100%)}
-}
 </style><style>
 .mobile-history{display:none}
 @media (pointer:coarse), (max-width:760px){
  .mobile-history{display:flex;justify-content:flex-end;gap:8px;margin:8px 0 10px}
  .mobile-history .history-button{width:44px;min-height:40px;padding:5px;background:#164d57;color:#fff;border:1px solid #739b9e;border-radius:9px;box-shadow:0 2px 4px #123d3926;font-size:20px}
 }
+</style><style>
+/* Keep text outside filtered layers for browser compatibility. */
+.sea-controls{filter:none}
+.sea-controls [data-mode],.sea-controls #confirm-sunk,.sea-controls #reset{
+ filter:none!important;backdrop-filter:none;-webkit-backdrop-filter:none;
+ font-weight:700;text-shadow:none
+}
+.sea-controls [data-mode]::before,.sea-controls #confirm-sunk::before,.sea-controls #reset::before{
+ clip-path:polygon(6% 0,88% 0,92% 1%,94% 3%,94% 6%,92% 9%,9% 92%,6% 94%,3% 94%,1% 92%,0 88%,0 6%,1% 3%,3% 1%);
+ background:rgb(10 62 80 / 82%);
+ filter:drop-shadow(0 2px 3px #001c2b99)
+}
+.sea-controls #confirm-sunk:disabled{opacity:1;color:#dce8e7}
+.sea-controls #confirm-sunk:disabled::before{background:rgb(24 89 99 / 80%)}
 </style></head>
-<body><svg width="0" height="0" aria-hidden="true" style="position:absolute"><defs><filter id="round-button" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/><feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 20 -9"/></filter></defs></svg>
+<body>
 <header class="mast"><div class="mast-inner">
   <h1>《海岛奇兵》声呐小助手</h1>
   <div class="help-tools">
-    <span id="guide-credit">版本号：F4.3
+    <span id="guide-credit">版本号：F4.3.1
 作者：家恩宝贝
 助理：GPT-6.2 Astra</span>
     <button type="button" id="guide-open" aria-haspopup="dialog" aria-controls="guide-dialog">使用说明</button>
@@ -354,7 +362,7 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
       <button type="button" id="cancel-sunk">取消选取</button>
     </div>
     <div class="board-scroll sea" id="board-scroll" tabindex="0" aria-label="探索棋盘，可横向滚动"><div class="scene" id="scene"><canvas aria-hidden="true" class="ocean-surface" id="ocean-surface"></canvas><div class="board" id="board"></div></div></div>
-    <div class="legend" aria-label="棋盘图例"><span><i class="key"></i>未知</span><span><i class="key water"></i>空水</span><span><i class="key ring"></i>排除空水</span><span><i class="key hit"></i>命中</span><span><i class="key sunk"></i>已击沉</span><span><i class="key best"></i>最高概率</span></div>
+    <div class="legend" aria-label="棋盘图例"><span><i class="key"></i>未知</span><span><i class="key water"></i>空水</span><span><i class="key hit"></i>命中</span><span><i class="key sunk"></i>已击沉</span><span><i class="key best"></i>最高概率</span></div>
     <div class="result" aria-live="polite"><p><strong id="recommend"></strong></p><p id="status" class="dim"></p></div>
   </section>
 </main>
@@ -390,7 +398,7 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
 
 </dialog>
 <script>(() => {
-  const copy = {"zh":{"guide":"使用说明","faq":"常见问题","close":"关闭","credit":"版本号：F4.3\n作者：家恩宝贝\n助理：GPT-6.2 Astra","sections":[["选择当前海域",["海域预设","选择游戏里的关卡，助手会载入对应的海域边长和舰队，并清空棋盘。11~99号海域共用一套配置。选错关卡时可点撤销。"],["自定义","想改设置时点「自定义」，当前标记会保留。用 − / + 或直接输入数字，调整海域边长、潜艇数量和每艘的长度。每艘至少 2 格，舰队图标上的圆点表示长度。"]],["记录每一发的结果",["空水","鱼雷落在空格，选「空水」再点对应格。"],["命中","击中艇身、游戏仍未提示击沉时，逐格记录命中。"],["击沉","游戏提示击沉后，依次点艇身的两个不同端点。两端要在同一行或同一列。核对高亮范围后点「确认击沉」。预览时可改点终点，「取消选取」可重选起点。"],["取消标记","在空水或命中模式下，再点一次相同标记即可取消，也可以使用撤销。"]],["阅读棋盘和推荐",["棋盘缩放","手机双指缩放、电脑滚轮缩放，仅改变棋盘大小。海域和操作按钮保持不变。例如 B3 是 B 列、第 3 行。"],["图例","未知格显示命中率，金框标出并列最高的格子。小屏斜视会把百分比取整，可缩放棋盘查看。空水是手动记录的落空位置，「排除空水」是已击沉艇周围自动排除的格子。"],["推荐探索","棋盘下方列出最高概率的坐标和计算状态。并列时可任选一个，发射后按游戏结果更新标记。"],["显示百分比","勾选可查看命中率数字。关闭后可按颜色深浅比较各格，金框仍标出命中率最高的位置。"]],["修改记录或开始下一局",["已击沉","确认后会扣除一艘对应长度的潜艇。「修正」可重选终点，想换起点则先移除整条记录，再重新标记。"],["↶ / ↷","撤销上一步或恢复刚撤销的修改。也可按 Ctrl 或 ⌘ 加 Z 撤销，加 Shift 和 Z 恢复。Windows 上也可用 Ctrl+Y 恢复。"],["清空","清除本局的手动标记和击沉记录，保留舰队设置。误点后可立即撤销。"]],["保存进度",["自动保存","当前棋盘会自动保存在此浏览器中。"]],["留言与建议",["留言板","在页面底部填写昵称和留言，点「发表留言」。发表成功后，其他访问者也能看到你的昵称和内容。「刷新」可读取最新留言，「查看更多」可翻看较早的留言。"],["联系我","从页首打开「联系我」，填写建议。称呼和联系方式都可留空。点「发送建议」即可私下发给作者。"]]],"questions":[["一个格子的命中率是怎么算的？","助手把符合舰队设置及全部标记的完整布局视为等可能。假设 20 种合法布局中有 8 种在 B3 放有潜艇，那么 B3 的命中率是 40%。同长度潜艇互换只计一次。"],["「精确」「近似」和 0% 分别表示什么？","精确表示已枚举全部合法布局。海域较大、组合太多时会改用加权抽样。有效样本较少时，推荐可能波动，近似的 0% 只表示本次样本未在该格发现潜艇。"],["为什么一圈格子自动变成了「排除空水」？","计算规则要求潜艇间至少隔一格，包括对角方向。确认击沉后，相邻一圈会自动排除。若位置有误，可在「已击沉」列表修正或移除对应记录。"],["为什么「确认击沉」点不了？","检查两个端点是否不同且同行或同列，所选长度是否与一艘剩余潜艇相符。艇身不能穿过已标记的空水，也不能贴着另一艘已击沉潜艇。棋盘上方会提示冲突原因。"],["显示「当前没有合法布局」或「暂未获得可用估算」怎么办？","没有合法布局时，先核对开局舰队，再检查空水、命中和击沉范围。每艘未击沉的潜艇至少要留一格未命中。暂未获得估算则表示抽样未找到完整布局，补充真实线索后会重新计算。"],["会连接游戏账号或自动发射鱼雷吗？","你在游戏内发射鱼雷，再把结果手动记在助手里。助手只在本机计算，不需要登录账号、读取游戏画面或安装插件。"],["想让作者私下回复，在哪里留联系方式？","打开「联系我」，在联系方式栏填入你希望作者使用的联系方式。给作者的建议和联系方式仅随表单私下提交。页面底部的留言板对所有访问者公开。"]]}};
+  const copy = {"zh":{"guide":"使用说明","faq":"常见问题","close":"关闭","credit":"版本号：F4.3.1\n作者：家恩宝贝\n助理：GPT-6.2 Astra","sections":[["选择当前海域",["海域预设","选择游戏里的关卡，助手会载入对应的海域边长和舰队，并清空棋盘。11~99号海域共用一套配置。选错关卡时可点撤销。"],["自定义","想改设置时点「自定义」，当前标记会保留。用 − / + 或直接输入数字，调整海域边长、潜艇数量和每艘的长度。每艘至少 2 格，舰队图标上的圆点表示长度。"]],["记录每一发的结果",["空水","鱼雷落在空格，选「空水」再点对应格。"],["命中","击中艇身、游戏仍未提示击沉时，逐格记录命中。"],["击沉","游戏提示击沉后，依次点艇身的两个不同端点。两端要在同一行或同一列。核对高亮范围后点「确认击沉」。预览时可改点终点，「取消选取」可重选起点。"],["取消标记","在空水或命中模式下，再点一次相同标记即可取消，也可以使用撤销。"]],["阅读棋盘和推荐",["棋盘缩放","手机双指缩放、电脑滚轮缩放，仅改变棋盘大小。海域和操作按钮保持不变。例如 B3 是 B 列、第 3 行。"],["图例","未知格显示命中率，金框标出并列最高的格子。小屏斜视会把百分比取整，可缩放棋盘查看。空水包括手动记录的落空位置，以及已击沉艇周围自动排除的格子。"],["推荐探索","棋盘下方列出最高概率的坐标和计算状态。并列时可任选一个，发射后按游戏结果更新标记。"],["显示百分比","勾选可查看命中率数字。关闭后可按颜色深浅比较各格，金框仍标出命中率最高的位置。"]],["修改记录或开始下一局",["已击沉","确认后会扣除一艘对应长度的潜艇。「修正」可重选终点，想换起点则先移除整条记录，再重新标记。"],["↶ / ↷","撤销上一步或恢复刚撤销的修改。也可按 Ctrl 或 ⌘ 加 Z 撤销，加 Shift 和 Z 恢复。Windows 上也可用 Ctrl+Y 恢复。"],["清空","清除本局的手动标记和击沉记录，保留舰队设置。误点后可立即撤销。"]],["保存进度",["自动保存","当前棋盘会自动保存在此浏览器中。"]],["留言与建议",["留言板","在页面底部填写昵称和留言，点「发表留言」。发表成功后，其他访问者也能看到你的昵称和内容。「刷新」可读取最新留言，「查看更多」可翻看较早的留言。"],["联系我","从页首打开「联系我」，填写建议。称呼和联系方式都可留空。点「发送建议」即可私下发给作者。"]]],"questions":[["一个格子的命中率是怎么算的？","助手把符合舰队设置及全部标记的完整布局视为等可能。假设 20 种合法布局中有 8 种在 B3 放有潜艇，那么 B3 的命中率是 40%。同长度潜艇互换只计一次。"],["「精确」「近似」和 0% 分别表示什么？","精确表示已枚举全部合法布局。海域较大、组合太多时会改用加权抽样。有效样本较少时，推荐可能波动，近似的 0% 只表示本次样本未在该格发现潜艇。"],["为什么已击沉潜艇周围自动标成空水？","计算规则要求潜艇间至少隔一格，包括对角方向。确认击沉后，相邻一圈会自动排除。若位置有误，可在「已击沉」列表修正或移除对应记录。"],["为什么「确认击沉」点不了？","检查两个端点是否不同且同行或同列，所选长度是否与一艘剩余潜艇相符。艇身不能穿过已标记的空水，也不能贴着另一艘已击沉潜艇。棋盘上方会提示冲突原因。"],["显示「当前没有合法布局」或「暂未获得可用估算」怎么办？","没有合法布局时，先核对开局舰队，再检查空水、命中和击沉范围。每艘未击沉的潜艇至少要留一格未命中。暂未获得估算则表示抽样未找到完整布局，补充真实线索后会重新计算。"],["会连接游戏账号或自动发射鱼雷吗？","你在游戏内发射鱼雷，再把结果手动记在助手里。助手只在本机计算，不需要登录账号、读取游戏画面或安装插件。"],["想让作者私下回复，在哪里留联系方式？","打开「联系我」，在联系方式栏填入你希望作者使用的联系方式。给作者的建议和联系方式仅随表单私下提交。页面底部的留言板对所有访问者公开。"]]}};
   const dialog = document.getElementById("guide-dialog");
   const content = document.getElementById("guide-content");
   const title = document.getElementById("guide-title");
@@ -768,7 +776,7 @@ function stepper(label, value, min, max, update, icon) {
   if (state.stage) {
     const output = document.createElement("span");
     output.className = "preset-value";
-    output.textContent = icon ? tr("{n} 格长",{n:value}) : String(value);
+    output.textContent = icon ? tr("{n} 格",{n:value}) : String(value);
     row.append(name,output);
     return row;
   }
@@ -975,7 +983,7 @@ function renderBoard() {
       const cell = document.createElement("button");
       cell.type = "button";
       cell.dataset.cell = i;
-      const mark = {sunk:["沉","已击沉"],hit:["×","命中"],water:["·","空水"],ring:["·","排除空水"],unknown:["","未知"]}[kind];
+      const mark = {sunk:["沉","已击沉"],hit:["×","命中"],water:["·","空水"],ring:["·","空水"],unknown:["","未知"]}[kind];
       const p = kind === "unknown" && probabilities ? probabilities[i] : null;
       cell.className = `cell ${kind}${bestCells.has(i) ? " best" : ""}${preview.has(i) ? " preview" : ""}${i===draft?.start ? " anchor" : ""}`;
       const label = document.createElement("span");
