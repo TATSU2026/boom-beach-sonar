@@ -34,7 +34,7 @@
   };
   const byId = id => document.getElementById(id);
   const config = window.SONAR_SERVICES || {};
-  const word = key => words[key][0];
+  const word = key => window.sonarLocale.translate(words[key][0]);
   const notices = new Map();
   function notice(id, key, error = false) {
     notices.set(id,key);
@@ -154,6 +154,7 @@
       finally {button.disabled=false;}
     };
   }
+  document.addEventListener('sonar-language-changed',translate);
   if (byId("guest-form")) {
     translate(); startGuestbook();
   } else if (byId("contact-form")) startContact();
