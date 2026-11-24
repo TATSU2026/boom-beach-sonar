@@ -176,7 +176,7 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
 .odds-control{margin-inline-start:auto;gap:5px;padding:5px 2px;font-size:13px;cursor:pointer;color:var(--muted)}
 .odds-control input{margin:0;width:16px;height:16px;accent-color:var(--accent)}
 
-/* F4.4.3: the ocean and controls stay fixed; only the board scales. */
+/* F4.4.5: the ocean and controls stay fixed; only the board scales. */
 .sea .scene{min-width:0;aspect-ratio:1.12;touch-action:none}
 .sea .board{top:48%;width:61%;transform:translate(-50%,-50%) perspective(185cqw) rotateX(44deg) rotateZ(45deg) scale(var(--board-zoom,1));transform-origin:center;touch-action:none}
 .sea-controls{position:absolute;inset:0;z-index:5;pointer-events:none}
@@ -332,12 +332,22 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
 .scene{direction:ltr}
 @media(max-width:560px){.help-tools>.locale-menu>summary{height:36px}}
 </style>
+<style>
+.mast-inner > .help-tools{margin-left:auto;max-width:100%;justify-content:right}
+@media(max-width:760px){.mast-inner #guide-credit{text-align:right;margin-inline-end:0}}
+</style>
+<style>
+.mast-inner{direction:ltr}
+.mast .sonar-title{text-align:left;margin:0;max-width:100%;line-height:1.15}
+.sonar-title span:first-child{font-size:.63em;font-weight:650}
+[dir="rtl"] .mast-inner > .help-tools{direction:rtl}
+</style>
 </head>
 <body>
 <header class="mast"><div class="mast-inner">
-  <h1>《海岛奇兵》声呐小助手</h1>
+  <h1 class="sonar-title" dir="auto"><span>海岛奇兵</span><br><span>声呐小助手</span></h1>
   <div class="help-tools">
-    <span id="guide-credit">版本号：F4.4.3
+    <span id="guide-credit">版本号：F4.4.5
 作者：家恩宝贝
 助理：GPT-6.2 Astra</span>
     <button type="button" id="guide-open" aria-haspopup="dialog" aria-controls="guide-dialog">使用说明</button>
@@ -415,8 +425,8 @@ details{margin-top:12px;color:var(--muted);font-size:13px}summary{cursor:pointer
   <div id="guide-content" tabindex="0"></div>
 
 </dialog>
-<script src="languages.js?v=F4.4.3"></script><script src="language.js?v=F4.4.3"></script><script>(() => {
-  const copy = {"zh":{"guide":"使用说明","faq":"常见问题","close":"关闭","credit":"版本号：F4.4.3\n作者：家恩宝贝\n助理：GPT-6.2 Astra","sections":[["选择当前海域",["海域预设","选择游戏里的关卡，助手会载入对应的海域边长和舰队，并清空棋盘。11~99号海域共用一套配置。选错关卡时可点撤销。"],["自定义","想改设置时点「自定义」，当前标记会保留。用 − / + 或直接输入数字，调整海域边长、潜艇数量和每艘的长度。每艘至少 2 格，舰队图标上的圆点表示长度。"]],["记录每一发的结果",["空水","鱼雷落在空格，选「空水」再点对应格。"],["命中","击中艇身、游戏仍未提示击沉时，逐格记录命中。"],["击沉","游戏提示击沉后，依次点艇身的两个不同端点。两端要在同一行或同一列。核对高亮范围后点「确认击沉」。预览时可改点终点，「取消选取」可重选起点。"],["取消标记","在空水或命中模式下，再点一次相同标记即可取消，也可以使用撤销。"]],["阅读棋盘和推荐",["棋盘缩放","手机双指缩放、电脑滚轮缩放，仅改变棋盘大小。海域和操作按钮保持不变。例如 B3 是 B 列、第 3 行。"],["图例","未知格显示命中率，金框标出并列最高的格子。小屏斜视会把百分比取整，可缩放棋盘查看。空水包括手动记录的落空位置，以及已击沉艇周围自动排除的格子。"],["推荐探索","棋盘下方列出最高概率的坐标和计算状态。并列时可任选一个，发射后按游戏结果更新标记。"],["显示百分比","勾选可查看命中率数字。关闭后可按颜色深浅比较各格，金框仍标出命中率最高的位置。"]],["修改记录或开始下一局",["已击沉","确认后会扣除一艘对应长度的潜艇。「修正」可重选终点，想换起点则先移除整条记录，再重新标记。"],["↶ / ↷","撤销上一步或恢复刚撤销的修改。也可按 Ctrl 或 ⌘ 加 Z 撤销，加 Shift 和 Z 恢复。Windows 上也可用 Ctrl+Y 恢复。"],["清空","清除本局的手动标记和击沉记录，保留舰队设置。误点后可立即撤销。"]],["保存进度",["自动保存","当前棋盘会自动保存在此浏览器中。"]],["留言与建议",["留言板","在页面底部填写昵称和留言，点「发表留言」。发表成功后，其他访问者也能看到你的昵称和内容。「刷新」可读取最新留言，「查看更多」可翻看较早的留言。"],["联系我","从页首打开「联系我」，填写建议。称呼和联系方式都可留空。点「发送建议」即可私下发给作者。"]]],"questions":[["一个格子的命中率是怎么算的？","助手把符合舰队设置及全部标记的完整布局视为等可能。假设 20 种合法布局中有 8 种在 B3 放有潜艇，那么 B3 的命中率是 40%。同长度潜艇互换只计一次。"],["「精确」「近似」和 0% 分别表示什么？","精确表示已枚举全部合法布局。海域较大、组合太多时会改用加权抽样。有效样本较少时，推荐可能波动，近似的 0% 只表示本次样本未在该格发现潜艇。"],["为什么已击沉潜艇周围自动标成空水？","计算规则要求潜艇间至少隔一格，包括对角方向。确认击沉后，相邻一圈会自动排除。若位置有误，可在「已击沉」列表修正或移除对应记录。"],["为什么「确认击沉」点不了？","检查两个端点是否不同且同行或同列，所选长度是否与一艘剩余潜艇相符。艇身不能穿过已标记的空水，也不能贴着另一艘已击沉潜艇。棋盘上方会提示冲突原因。"],["显示「当前没有合法布局」或「暂未获得可用估算」怎么办？","没有合法布局时，先核对开局舰队，再检查空水、命中和击沉范围。每艘未击沉的潜艇至少要留一格未命中。暂未获得估算则表示抽样未找到完整布局，补充真实线索后会重新计算。"],["会连接游戏账号或自动发射鱼雷吗？","你在游戏内发射鱼雷，再把结果手动记在助手里。助手只在本机计算，不需要登录账号、读取游戏画面或安装插件。"],["想让作者私下回复，在哪里留联系方式？","打开「联系我」，在联系方式栏填入你希望作者使用的联系方式。给作者的建议和联系方式仅随表单私下提交。页面底部的留言板对所有访问者公开。"]]}};
+<script src="languages.js?v=F4.4.5"></script><script src="language.js?v=F4.4.5"></script><script>(() => {
+  const copy = {"zh":{"guide":"使用说明","faq":"常见问题","close":"关闭","credit":"版本号：F4.4.5\n作者：家恩宝贝\n助理：GPT-6.2 Astra","sections":[["选择当前海域",["海域预设","选择游戏里的关卡，助手会载入对应的海域边长和舰队，并清空棋盘。11~99号海域共用一套配置。选错关卡时可点撤销。"],["自定义","想改设置时点「自定义」，当前标记会保留。用 − / + 或直接输入数字，调整海域边长、潜艇数量和每艘的长度。每艘至少 2 格，舰队图标上的圆点表示长度。"]],["记录每一发的结果",["空水","鱼雷落在空格，选「空水」再点对应格。"],["命中","击中艇身、游戏仍未提示击沉时，逐格记录命中。"],["击沉","游戏提示击沉后，依次点艇身的两个不同端点。两端要在同一行或同一列。核对高亮范围后点「确认击沉」。预览时可改点终点，「取消选取」可重选起点。"],["取消标记","在空水或命中模式下，再点一次相同标记即可取消，也可以使用撤销。"]],["阅读棋盘和推荐",["棋盘缩放","手机双指缩放、电脑滚轮缩放，仅改变棋盘大小。海域和操作按钮保持不变。例如 B3 是 B 列、第 3 行。"],["图例","未知格显示命中率，金框标出并列最高的格子。小屏斜视会把百分比取整，可缩放棋盘查看。空水包括手动记录的落空位置，以及已击沉艇周围自动排除的格子。"],["推荐探索","棋盘下方列出最高概率的坐标和计算状态。并列时可任选一个，发射后按游戏结果更新标记。"],["显示百分比","勾选可查看命中率数字。关闭后可按颜色深浅比较各格，金框仍标出命中率最高的位置。"]],["修改记录或开始下一局",["已击沉","确认后会扣除一艘对应长度的潜艇。「修正」可重选终点，想换起点则先移除整条记录，再重新标记。"],["↶ / ↷","撤销上一步或恢复刚撤销的修改。也可按 Ctrl 或 ⌘ 加 Z 撤销，加 Shift 和 Z 恢复。Windows 上也可用 Ctrl+Y 恢复。"],["清空","清除本局的手动标记和击沉记录，保留舰队设置。误点后可立即撤销。"]],["保存进度",["自动保存","当前棋盘会自动保存在此浏览器中。"]],["留言与建议",["留言板","在页面底部填写昵称和留言，点「发表留言」。发表成功后，其他访问者也能看到你的昵称和内容。「刷新」可读取最新留言，「查看更多」可翻看较早的留言。"],["联系我","从页首打开「联系我」，填写建议。称呼和联系方式都可留空。点「发送建议」即可私下发给作者。"]]],"questions":[["一个格子的命中率是怎么算的？","助手把符合舰队设置及全部标记的完整布局视为等可能。假设 20 种合法布局中有 8 种在 B3 放有潜艇，那么 B3 的命中率是 40%。同长度潜艇互换只计一次。"],["「精确」「近似」和 0% 分别表示什么？","精确表示已枚举全部合法布局。海域较大、组合太多时会改用加权抽样。有效样本较少时，推荐可能波动，近似的 0% 只表示本次样本未在该格发现潜艇。"],["为什么已击沉潜艇周围自动标成空水？","计算规则要求潜艇间至少隔一格，包括对角方向。确认击沉后，相邻一圈会自动排除。若位置有误，可在「已击沉」列表修正或移除对应记录。"],["为什么「确认击沉」点不了？","检查两个端点是否不同且同行或同列，所选长度是否与一艘剩余潜艇相符。艇身不能穿过已标记的空水，也不能贴着另一艘已击沉潜艇。棋盘上方会提示冲突原因。"],["显示「当前没有合法布局」或「暂未获得可用估算」怎么办？","没有合法布局时，先核对开局舰队，再检查空水、命中和击沉范围。每艘未击沉的潜艇至少要留一格未命中。暂未获得估算则表示抽样未找到完整布局，补充真实线索后会重新计算。"],["会连接游戏账号或自动发射鱼雷吗？","你在游戏内发射鱼雷，再把结果手动记在助手里。助手只在本机计算，不需要登录账号、读取游戏画面或安装插件。"],["想让作者私下回复，在哪里留联系方式？","打开「联系我」，在联系方式栏填入你希望作者使用的联系方式。给作者的建议和联系方式仅随表单私下提交。页面底部的留言板对所有访问者公开。"]]}};
   const dialog = document.getElementById("guide-dialog");
   const content = document.getElementById("guide-content");
   const title = document.getElementById("guide-title");
@@ -1496,5 +1506,5 @@ window.SONAR_SERVICES = {
   formspreeId: "mqpqqned"
 };
 
-</script><script src="./settings.js"></script><script src="./community.js?v=F4.4.3"></script>
+</script><script src="./settings.js"></script><script src="./community.js?v=F4.4.5"></script>
 </body></html>
